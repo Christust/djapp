@@ -38,7 +38,13 @@ BASE_APPS = [
     "django.contrib.staticfiles",
 ]
 
-LOCAL_APPS = ["apps.users"]
+LOCAL_APPS = [
+    "apps.users",
+    "apps.base",
+    "apps.branches",
+    "apps.stores",
+    "apps.maintenances",
+]
 
 THIRD_APPS = []
 

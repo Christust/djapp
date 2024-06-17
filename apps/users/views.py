@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 def index(request):
     context = {"prueba": "prueba textual"}
-    return render(request, "users/index.html", context)
+    return render(request, "user/index.html", context)
 
 
 def login(request):
