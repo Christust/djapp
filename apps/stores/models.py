@@ -59,11 +59,14 @@ class Stock(Base):
         return self.item
 
     def __str__(self):
-        return f"{self.item}"
+        return f"{self.store} - {self.item}"
 
     class Meta:
         verbose_name = "Stock"
         verbose_name_plural = "Stocks"
+
+        # Unico item por store
+        unique_together = ('store', 'item')
 
 
 class MaterialRequest(Base):
