@@ -135,19 +135,12 @@ STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
 
-
-
-
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     # other finders..
     'compressor.finders.CompressorFinder',
 )
-
-COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
-
-COMPRESS_ROOT = BASE_DIR / "static"
 """
 
 # Default primary key field type
@@ -155,4 +148,14 @@ COMPRESS_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# CUSTOM
+
+# Custom user model
 AUTH_USER_MODEL = "users.User"
+
+"""
+# Configuration for scss files and compress tag
+COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
+
+COMPRESS_ROOT = BASE_DIR / "static"
+"""
