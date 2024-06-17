@@ -46,7 +46,9 @@ LOCAL_APPS = [
     "apps.maintenances",
 ]
 
-THIRD_APPS = ["compressor"]
+THIRD_APPS = [
+#"compressor"
+]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
@@ -128,6 +130,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+"""
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
@@ -145,7 +148,7 @@ STATICFILES_FINDERS = (
 COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
 
 COMPRESS_ROOT = BASE_DIR / "static"
-
+"""
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

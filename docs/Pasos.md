@@ -44,6 +44,21 @@ TEMPLATES = [
 ...
 ```
 
+Si queremos cambiar el idioma de nuestro sistema podemos configurar la sección de lenguaje, cambiando la cadena de texto de "LANGUAGE_CODE" al sistema que deseemos, en este caso a español:
+
+```
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = "es" 
+
+TIME_ZONE = "UTC"
+
+USE_I18N = True
+
+USE_TZ = True
+```
+
 # Aplicaciones
 
 Para crear apliaciones debemos posicionarnos en la carpeta donde la crearemos y ejecutar:
@@ -121,7 +136,7 @@ python manage.py migrate
 Si se desea crear una migracion vacia para por ejemplo crear datos en una migracion ejecutamos:
 
 ```
-python manage.py makemigrations <nombre de la app> --empty
+python manage.py makemigrations <nombre de la app> --empty --name <nombre descriptivo de lo que se hara >
 ```
 
 Posteriormente nos dirigimos a la migracion creada y agregamos la funcion que debe crear los registros y agregarla al array que ejecutara dicha función:
@@ -158,3 +173,4 @@ Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar a
 
 # Archivos estaticos
 
+# Admin
