@@ -1,0 +1,19 @@
+.loginPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  animation-name: loginPage;
+  animation-duration: 2s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes loginPage {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

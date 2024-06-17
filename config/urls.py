@@ -17,9 +17,9 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from config.views import Home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("users/", include("apps.users.urls")),
-    path("branches/", include("apps.branches.urls")),
+    path("", Home, name="index")
 ]

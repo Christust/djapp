@@ -1,0 +1,34 @@
+// COLORS
+$color-primary: #7b7b7b;
+$color-primary-light: #adadad;
+$color-primary-dark: #545454;
+
+$color-secondary: #f6f6f6;
+$color-secondary-light: lighten($color-secondary, 10%);
+$color-secondary-dark: darken($color-secondary, 10%);
+
+$color-white: #fff;
+$color-black: #000;
+
+$color-error: #dc3545;
+$color-success: #21ba45;
+$color-warning: #fbbd08;
+$color-info: #767676;
+
+$silver-50: #f7f7f7;
+$silver-100: #ededed;
+$silver-200: #dfdfdf;
+$silver-300: #bbbbbb;
+$silver-500: #999999;
+$silver-600: #888888;
+$silver-800: #676767;
+$silver-950: #363636;
+
+$color-titles-and-texts: #6a6e83;
+$background: #f8f9fd;
+
+// FONT
+$default-title-size: 14px;
+$default-font-size: 12px;
+$default-primary-font: Poppins;
+$default-secondary-font: Poppins;

@@ -1,0 +1,206 @@
+@import url(/static/bootstrap/css/bootstrap.min.css?038257adf428);
+/* line 1, static/scss/base/_utilities.scss */
+.textJustified {
+  text-align: justify;
+  text-justify: inter-word; }
+
+/* line 6, static/scss/base/_utilities.scss */
+.cardGradient {
+  background-image: linear-gradient(#adadad, #545454);
+  color: #dfdfdf;
+  border: none; }
+  /* line 10, static/scss/base/_utilities.scss */
+  .cardGradient .card-title {
+    color: #fff; }
+  /* line 13, static/scss/base/_utilities.scss */
+  .cardGradient p,
+  .cardGradient li {
+    color: #dfdfdf; }
+
+/* line 19, static/scss/base/_utilities.scss */
+.patientsHeadClass {
+  background-color: #ededed;
+  border-radius: 8px 8px;
+  border-collapse: separate;
+  border-spacing: 0 1rem;
+  padding: 0 1rem; }
+  /* line 28, static/scss/base/_utilities.scss */
+  .patientsHeadClass thead tr th {
+    text-align: center;
+    font-size: 1rem;
+    color: #363636 !important;
+    padding: 1.5rem 0.5rem; }
+  /* line 34, static/scss/base/_utilities.scss */
+  .patientsHeadClass thead tr th:first-child {
+    border-radius: 21px 0px 0px 21px; }
+  /* line 37, static/scss/base/_utilities.scss */
+  .patientsHeadClass thead tr th:last-child {
+    border-radius: 0 21px 21px 0px; }
+  /* line 42, static/scss/base/_utilities.scss */
+  .patientsHeadClass tbody {
+    border: 1px solid #f6f6f6; }
+    /* line 44, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody tr {
+      padding: 1rem 0.5rem; }
+    /* line 47, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody td:first-child {
+      border-radius: 21px 0px 0px 21px; }
+    /* line 50, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody td:last-child {
+      border-radius: 0 21px 21px 0px; }
+    /* line 53, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody td {
+      text-align: center;
+      padding: 1rem 0.5rem;
+      align-items: center; }
+    /* line 58, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody tr:nth-child(odd) {
+      background: #fff !important;
+      box-shadow: none; }
+      /* line 61, static/scss/base/_utilities.scss */
+      .patientsHeadClass tbody tr:nth-child(odd) td {
+        vertical-align: middle;
+        background: #fff !important;
+        box-shadow: none !important; }
+    /* line 67, static/scss/base/_utilities.scss */
+    .patientsHeadClass tbody tr:nth-child(even) {
+      background: #fff !important;
+      box-shadow: none; }
+      /* line 70, static/scss/base/_utilities.scss */
+      .patientsHeadClass tbody tr:nth-child(even) td {
+        vertical-align: middle;
+        background: #fff !important;
+        box-shadow: none !important; }
+
+/* line 79, static/scss/base/_utilities.scss */
+.hv-100 {
+  height: 100vh !important; }
+
+/* line 4, static/scss/base/index.scss */
+body {
+  box-sizing: border-box !important;
+  min-height: 100vh !important; }
+
+/* line 9, static/scss/base/index.scss */
+label,
+select,
+p,
+input,
+button,
+span,
+div,
+textarea {
+  font-size: 12px !important; }
+
+/* line 20, static/scss/base/index.scss */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+select,
+li,
+label,
+p,
+textarea {
+  color: #6a6e83; }
+
+/* line 35, static/scss/base/index.scss */
+p {
+  text-justify: inter-word; }
+
+/* line 1, static/scss/layout/index.scss */
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: space-between; }
+
+/* line 8, static/scss/layout/index.scss */
+.sidebar {
+  width: 15vw;
+  background-color: #242726;
+  text-align: center; }
+  /* line 12, static/scss/layout/index.scss */
+  .sidebar__sidebarRouteContainer {
+    text-align: center;
+    padding: 0.4rem;
+    display: flex; }
+  /* line 17, static/scss/layout/index.scss */
+  .sidebar__sidebarRoute {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem;
+    text-transform: none;
+    text-decoration: none;
+    color: white;
+    width: 100%;
+    cursor: pointer;
+    user-select: none; }
+    /* line 27, static/scss/layout/index.scss */
+    .sidebar__sidebarRoute--button {
+      background-color: #313133;
+      border-radius: 0.6rem; }
+      /* line 30, static/scss/layout/index.scss */
+      .sidebar__sidebarRoute--button__active {
+        background-color: #464646; }
+    /* line 34, static/scss/layout/index.scss */
+    .sidebar__sidebarRoute--button:hover {
+      background-color: #3a3a3b; }
+
+/* line 40, static/scss/layout/index.scss */
+.sideMainContainer {
+  width: 85vw;
+  padding: 0.7rem 1.2rem; }
+
+/* line 45, static/scss/layout/index.scss */
+.mainContent {
+  min-height: 80vh;
+  max-width: 100vw; }
+
+/* line 50, static/scss/layout/index.scss */
+.footerContent {
+  min-height: 10vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center; }
+
+/* line 1, static/scss/loader/index.scss */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  opacity: 1;
+  transition: opacity 0.3s; }
+
+/* line 6, static/scss/loader/index.scss */
+.best_zind {
+  z-index: 2500; }
+
+/* line 9, static/scss/loader/index.scss */
+.loader {
+  position: fixed;
+  top: calc(50% - 32px);
+  left: calc(50% - 32px);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  perspective: 800px;
+  z-index: 99999; }
+
+/* line 1, static/scss/login/index.scss */
+.loginPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  animation-name: loginPage;
+  animation-duration: 2s;
+  animation-fill-mode: forwards; }
+
+@keyframes loginPage {
+  from {
+    opacity: 0; }
+  to {
+    opacity: 1; } }

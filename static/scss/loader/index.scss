@@ -1,0 +1,18 @@
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+.best_zind {
+  z-index: 2500;
+}
+.loader {
+  position: fixed;
+  top: calc(50% - 32px);
+  left: calc(50% - 32px);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  perspective: 800px;
+  z-index: 99999;
+}
