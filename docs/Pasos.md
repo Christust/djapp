@@ -349,6 +349,25 @@ class Migration(migrations.Migration):
     ]
 ```
 
+## Relaciones
+### One to one
+
+Si queremos declarar en un modelo que existe una relación de uno a uno debemos agregar el atributo al modelo de la siguiente forma:
+
+```
+<nombre del otro modelo> = models.OneToOneField(<Nombre del otro modelo>, on_delete=models.CASCADE, blank=False, null=False)
+```
+
+Este atributo solo se debe crear en uno de los dos modelos con la relacion uno a uno.
+
+### One to many
+
+Si queremos declarar un modelo con relacion uno a muchos debemos agregar la siguiente clausula a un atributo que represente al modelo que posee dichos modelos, para identificar quien debe llevar la relacion foranea debemos pensar que modelo pertenece a que modelo. Un ejemplo seria un modelo tiene muchos elementos de otro modelo, y dicho otro modelo pertenece al primer modelo. Entonces bajo esta logica quien debe llevar la clave foranea seria nuestro segundo modelo.
+
+```
+<nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>, on_delete=models.CASCADE, blank=False, null=False)
+```
+
 # Plantillas
 
 Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html. Podemos por ejemplo crear la plantilla para la vista home
@@ -362,3 +381,15 @@ Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar a
 # Archivos estaticos
 
 # Admin
+
+Si queremos registrar alguna aplicación al sitio de administración de Django, tenemos que modificar el archivo admin.py de la aplicación a registrar:
+
+```
+from django.contrib import admin
+from apps.<nombre de la aplicación>.models import <Nombre del modelo>
+
+# Register your models here.
+admin.site.register(<Nombre del modelo>)
+```
+
+Agregando esto podemos ver nuestro modelo y sus registros en la pagina de aministración
