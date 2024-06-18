@@ -21,5 +21,6 @@ from config.views import Home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    #path("", Home, name="index")
+    path("branches/", include("apps.branches.urls")),
+    path("", Home, name="index")
 ]

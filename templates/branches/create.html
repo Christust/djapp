@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Crear Branch</title>
+	<link rel="stylesheet" href="">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+<body>
+	<form method="POST">
+		{% csrf_token %}
+		{{ branch_form.as_p }}
+		<button type="submit">Crear</button>
+	</form>
+	<script>
+		$(document).ready(function() {
+		    $('#id_country').change(function() {
+		        var countryId = $(this).val();
+		        if (countryId) {
+		            $.ajax({
+		                url: '/branches/ajax/load_states/',
+		                data: {
+		                    'country_id': countryId
+		                },
+		                dataType: 'json',  // Especificar el tipo de datos que se espera
+		                success: function(data) {
+		                    // Limpiar y actualizar el select de estados
+		                    $('#id_state').empty();
+		                    $('#id_state').append('<option value="">---------</option>');
+		                    $.each(data, function(index, state) {
+		                        $('#id_state').append($('<option></option>')
+		                            .attr('value', state.id)
+		                            .text(state.name));
+		                    });
+
+		                    // Limpiar y actualizar el select de ciudades
+		                    $('#id_city').empty();
+		                    $('#id_city').append('<option value="">---------</option>');
+		                }
+		            });
+		        } else {
+		            // Limpiar selectores si no hay país seleccionado
+		            $('#id_state').empty();
+		            $('#id_state').append('<option value="">---------</option>');
+		            $('#id_city').empty();
+		            $('#id_city').append('<option value="">---------</option>');
+		        }
+		    });
+
+		    $('#id_state').change(function() {
+		        var stateId = $(this).val();
+		        if (stateId) {
+		            $.ajax({
+		                url: '/branches/ajax/load_cities/',
+		                data: {
+		                    'state_id': stateId
+		                },
+		                dataType: 'json',  // Especificar el tipo de datos que se espera
+		                success: function(data) {
+		                    // Limpiar y actualizar el select de ciudades
+		                    $('#id_city').empty();
+		                    $('#id_city').append('<option value="">---------</option>');
+		                    $.each(data, function(index, city) {
+		                        $('#id_city').append($('<option></option>')
+		                            .attr('value', city.id)
+		                            .text(city.name));
+		                    });
+		                }
+		            });
+		        } else {
+		            // Limpiar select de ciudades si no hay estado seleccionado
+		            $('#id_city').empty();
+		            $('#id_city').append('<option value="">---------</option>');
+		        }
+		    });
+		});
+	</script>
+</body>
+</html>

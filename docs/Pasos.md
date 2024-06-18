@@ -350,6 +350,9 @@ class Migration(migrations.Migration):
 ```
 
 ## Relaciones
+
+Las relaciones entre tablas describen el como se enlazan y se deben de comportar las tablas. El flujo de datos que se tiene y como se comportara el sistema.
+
 ### One to one
 
 Si queremos declarar en un modelo que existe una relación de uno a uno debemos agregar el atributo al modelo de la siguiente forma:
@@ -378,13 +381,68 @@ La relación muchos a muchos puede estar en cualquier modelo que se desee, solo 
 
 # Plantillas
 
-Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html. Podemos por ejemplo crear la plantilla para la vista home
+Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html que nuestros controladores renderizaran al final de cada función llamada por un endpoint.
 
 # Vistas
 
+Las vistas con los controladores de nuestro sistema, en los archivos views.py se encontraran las funciones que (enlzadas a una ruta) determinaran el comportamiento de nuestro sistema cuando consultamos o interactuamos con determinadas rutas.
+
+Para agregar una funcion a nuestra vista basta con crear una funcion basica en python que reciba un parametro llamado "request", este parametro es obligatorio ya que representa la petición del cliente a ese endpoint en especifico, al final de una función de vista debemos retornar algo, para este caso de prueba usaremos la función "render", que viene importada por defecto en los archivos views.py creados automaticamente. La función render recibe dos parametros como minimo, el primero debe ser la peticion ("request") y el segundo el template que se debe mostrar una vez terminado el proceso que realiza el endpoint.
+
+```
+from django.shortcuts import render
+
+# Create your views here.
+def <nombre de la funcion>(request):
+    return render(request, "<ruta de la carpeta>/<nombre del archivo>.html") 
+```
+
+En este caso en concreto se debe agregar la ruta de la carpeta contenedora, esto se hace en caso de que el archivo no se encuentre en la raiz de la carpeta "templates", si dentro de "templates" agregamos una subcarpeta con el nombre de la aplicación por ejemplo (para tener un mejor control de los archivos pertenecientes a la misma) debemos agregar a la cadena de texto de render la ruta del archivo como se muestra en el ejemplo.
+
+
+
 # Rutas
 
+Para gestionar las rutas o endpoints que nuestro sistema tendra debemos crear un archivo urls.py por cada aplicación que deseemos tenga rutas, este sera enlazado al archivo urls.py principal (el archivo urls.py que se crea por defecto al iniciar el proyecto ubicado en config o en la carpeta con el nombre del proyecto creada por defecto).
+
+Para ello en el archivo urls.py principal del proyecto debemos agregar la funcion "include" y dentro del array de urlpatterns agregamos la ruta base de la aplicación y como segundo parametro la funcion "include" que recibira como parametro un string que indicara la ubicación del archivo urls de la apliación:
+
+```
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    #path("<nombre de la aplicacion en plural (plurar por convención)>", include("apps.<nombre de la aplicación>.urls"))
+]
+```
+
+Con esto estamos enlazando nuestro archivo urls.py de nuestra aplicación en cuestion a nuestro archivo urls.py del proyecto. Despues de esto debemos asegurarnos que minimamente nuestro archivo urls.py de la nuestra aplicación tenga la siguiente estructura:
+
+```
+from django.urls import path
+from apps.<nombre de la aplicación> import views
+
+urlpatterns = []
+```
+
+
 # Forms
+
+Para iniciar debemos crear un archivo llamado forms.py en nuestra aplicación que querremos gestionar por medio de formularios automatizados de django. Para trabajar con los forms de django debemos crear una clase que representara un formulario, podemos crear una clase por cada modelo para gestionar su formulario general.
+
+```
+from django import forms
+from apps.<nombre del modelo>.models import <Nombre del modelo>
+
+
+class <Nombre del modelo>Form(forms.ModelForm):
+    class Meta:
+        model = <Nombre del modelo> # Modelo al cual pertenece este formulario
+        fields = ["field1", "filed2", ...] # Este atributo representara los campos del modelo que se mostraran en el formulario.
+```
+
+Cuando heredamos de ModelForm heredamos los campos del modelo que incluyamos en la subclase Meta.
 
 # Archivos estaticos
 
