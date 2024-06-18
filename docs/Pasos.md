@@ -368,6 +368,14 @@ Si queremos declarar un modelo con relacion uno a muchos debemos agregar la sigu
 <nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>, on_delete=models.CASCADE, blank=False, null=False)
 ```
 
+### Many to many
+
+La relación muchos a muchos puede estar en cualquier modelo que se desee, solo se debe declarar en uno de los dos modelos
+
+```
+<nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>)
+```
+
 # Plantillas
 
 Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html. Podemos por ejemplo crear la plantilla para la vista home
