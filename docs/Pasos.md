@@ -379,9 +379,75 @@ La relación muchos a muchos puede estar en cualquier modelo que se desee, solo 
 <nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>)
 ```
 
+### ORM
+
+Para interactuar con la base de datos utilizamos el ORM que Django tiene por defecto. Para poder interactuar con un modelo debemos hacerlo atraves de su atributo objects e indicandole la acción a realizar. Puede ser consultar los registros, guardar un registro nuevo, modificar un registro existende o eliminar un registro. Estas son las acciones mas comunes pero hay mas funciones de ayuda proporcionadas por el atributo object para realizar operaciones mas complejas.
+
+Ejemplo:
+
+```
+from apps.<nombre de la aplicacion>.models import <Nombre del modelo>
+
+<Nombre del modelo>.objects.create(atributo1 = <valor a usar>, ...) # Creamos un registro de forma directa
+
+nuevo_registro = <Nombre del modelo>(atributo1 = <valor a usar>, ...) # Intanciamos un nuevo registro sin guardar
+
+nuevo_registro.save() # Guardamos el registro
+
+<Nombre del modelo>.objects.all() # Traemos todos los registros sin ningun tipo de filtro
+
+<Nombre del modelo>.objects.filter(atributo1 = <valor a filtrar>) # Traemos todos los registro que cumplan las codiciones del filtro
+
+<Nombre del modelo>.objects.get(id = 1) # Traemos el primer valor que se consiga que cumpla las condiciones del filtro
+```
+
 # Plantillas
 
-Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html que nuestros controladores renderizaran al final de cada función llamada por un endpoint.
+Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html que nuestros controladores renderizaran al final de cada función llamada por un endpoint. El punto mas fuerte de las plantillas es que podemos reutilizar layouts o plantillas enteras usando los tags de Django.
+
+La manera mas usual de trabajar es tener en la raiz de la carpeta templates los layouts que usaremos, o las bases de las situaciones mas reptetivas de nuestro sistema.
+
+Crearemos un index.html en la raiz del template y agregamos lo siguiente:
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}Index{% endblock title %}</title>
+    <link rel="stylesheet" href="">
+    {% block extracss %}{% endblock extracss %}
+</head>
+<body>
+    {% block body %}
+    <h1>Index home</h1>
+    {% endblock body %}
+    {% block extrajs %}
+    {% endblock extrajs %}
+</body>
+</html>
+```
+
+En el ejemplo anterior usamos un tag especial llamado "block" el cual nos servira para herencia de templates, lo que escribamos entre este tag sera el valor por defecto que tendra, si nosotrs heredamos de este template, podremos utilizar los mismos tag para sobreescribir sus valores en la nueva plantilla.
+
+El ejmplo para poder heredar de este template es que en nuestra plantilla que heredera de el, no volveremos a escribir todo el html, solo necesitaremos escribir las partes que sabemos deben ser diferentes y que estan representadas por los bloques:
+
+```
+{% extends "index.html" %}
+{% block title %} Crear branch {% endblock title %}
+{% block body %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ branch_form.as_p }}
+        <button type="submit">Crear</button>
+    </form>
+{% endblock body %}
+```
+
+Con esto acabamos de crear toda la plantilla que hereda del index.html, sin repetir toda la estructura simplemente modificamos la parte que cambia, el resto permanece igual y se reutiliza.
+
+
 
 # Vistas
 
