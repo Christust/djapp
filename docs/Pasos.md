@@ -399,6 +399,20 @@ def <nombre de la funcion>(request):
 
 En este caso en concreto se debe agregar la ruta de la carpeta contenedora, esto se hace en caso de que el archivo no se encuentre en la raiz de la carpeta "templates", si dentro de "templates" agregamos una subcarpeta con el nombre de la aplicación por ejemplo (para tener un mejor control de los archivos pertenecientes a la misma) debemos agregar a la cadena de texto de render la ruta del archivo como se muestra en el ejemplo.
 
+Si nosotros queremos por ejemplo mandar datos, se dice que deseamos mandar un contexto, para ello debemos de crear un objeto en python (un diccionario) y mandarlo como tercer parametro, en este ejemplo estamos empleando un formulario:
+
+```
+def Create<Nombre del modelo>(request):
+    if request.method == "POST":
+        <nombre del modelo>_form = <Nombre del modelo>Form(request.POST)
+        if <nombre del modelo>_form.is_valid():
+            <nombre del modelo>_form.save()
+            return redirect("<nombre del modelo en plural>:index")
+    else:
+        <nombre del modelo>_form = <Nombre del modelo>Form()
+    return render(request, "<nombre del modelo>es/create.html", {"<nombre del modelo>_form": <nombre del modelo>_form})
+
+```
 
 
 # Rutas
@@ -443,6 +457,31 @@ class <Nombre del modelo>Form(forms.ModelForm):
 ```
 
 Cuando heredamos de ModelForm heredamos los campos del modelo que incluyamos en la subclase Meta.
+
+Al momento de utilizar el form en las plantillas debemos agregar una tag de django llamada csrf_token, el cual hara que nuestro form sea capaz de mandar los datos al backend de django, esto se hace para asegurarnos que los datos que estamos recibiendo son seguros y vienen de un origen de confianza. Un ejemplo seria asi:
+
+```
+<form method="POST">
+    {% csrf_token %}
+    {{ <nombre de la aplicacion>_form.as_p }}
+    <button type="submit">Crear</button>
+</form>
+```
+
+Para mandar un form este debe ser mandado como parte del contexto a una platilla, por defecto se manda un form vacio pero si se recibe la peticion por metodo "post" podremos llenar la data del form usando el request, verificar si es valido y guardar el registro:
+
+```
+def Create<Nombre del modelo>(request):
+    if request.method == "POST":
+        <nombre del modelo>_form = <Nombre del modelo>Form(request.POST)
+        if <nombre del modelo>_form.is_valid():
+            <nombre del modelo>_form.save()
+            return redirect("<nombre del modelo en plural>:index")
+    else:
+        <nombre del modelo>_form = <Nombre del modelo>Form()
+    return render(request, "<nombre del modelo>es/create.html", {"<nombre del modelo>_form": <nombre del modelo>_form})
+
+```
 
 # Archivos estaticos
 

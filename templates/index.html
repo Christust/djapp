@@ -3,10 +3,18 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Index</title>
+	<title>{% block title %}Index{% endblock title %}</title>
 	<link rel="stylesheet" href="">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+	{% block extracss %}{% endblock extracss %}
 </head>
 <body>
+	navbar
+	{% block body %}
 	<h1>Index home</h1>
+	{% endblock body %}
+	footbar
+	{% block extrajs %}
+	{% endblock extrajs %}
 </body>
 </html>
