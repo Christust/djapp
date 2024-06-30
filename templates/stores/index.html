@@ -1,0 +1,48 @@
+{% extends 'index.html' %}
+
+{% block header %}
+  Stores
+{% endblock %}
+{% block title %}
+  Crear store
+{% endblock %}
+{% block body %}
+  <div class="d-flex justify-content-end align-items-center">
+    <div class="col-12 text-end p-3">
+      <a href="{% url 'stores:create_store' %}" class="btn btn-primary">Nuevo Store</a>
+    </div>
+  </div>
+  {% if stores %}
+    <div class="d-flex justify-content-center">
+      <div class="col-12 p-3">
+        <table class="table patientsHeadClass table-striped">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Branch</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for store in stores %}
+              <tr>
+                <td>{{ store.id }}</td>
+                <td>{{ store.name }}</td>
+                <td>{{ store.branch }}</td>
+                <td>
+                  <a href="{% url 'stores:update_store' store.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <a href="{% url 'stores:stocks:index' store.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_store','{% url 'stores:delete_store' store.id %}')"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <h1>No existen stores</h1>
+  {% endif %}
+  <div class="modal fade" id="modal_store" role="dialog"></div>
+{% endblock %}

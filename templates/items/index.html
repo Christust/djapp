@@ -1,0 +1,53 @@
+{% extends 'index.html' %}
+
+{% block header %}
+  Items
+{% endblock %}
+{% block title %}
+  Crear item
+{% endblock %}
+{% block body %}
+  <div class="d-flex justify-content-end align-items-center">
+    <div class="col-12 text-end p-3">
+      <a href="{% url 'stores:create_item' %}" class="btn btn-primary">Nuevo Item</a>
+    </div>
+  </div>
+  {% if items %}
+    <div class="d-flex justify-content-center">
+      <div class="col-12 p-3">
+        <table class="table patientsHeadClass table-striped">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Brand</th>
+              <th>Barcode</th>
+              <th>Consumable</th>
+              <th>Units</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.brand }}</td>
+                <td>{{ item.barcode }}</td>
+                <td>{{ item.consumable }}</td>
+                <td>{{ item.units }}</td>
+                <td>
+                  <a href="{% url 'stores:update_item' item.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_item','{% url 'stores:delete_item' item.id %}')"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <h1>No existen items</h1>
+  {% endif %}
+  <div class="modal fade" id="modal_item" role="dialog"></div>
+{% endblock %}

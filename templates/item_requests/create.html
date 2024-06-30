@@ -1,0 +1,17 @@
+{% extends 'shared/generic_modal.html' %}
+{% block modal_title %}
+  Crear Item Request
+{% endblock %}
+{% block url_action %}
+  {% url 'item_requests:create' %}
+{% endblock %}
+{% block modal_body %}
+  {{ form.as_p }}
+{% endblock %}
+{% block close_button %}
+  Cancelar
+{% endblock %}
+{% block submit_button %}
+  Confirmar
+{% endblock %}
+

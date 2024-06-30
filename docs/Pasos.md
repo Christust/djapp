@@ -447,6 +447,56 @@ El ejmplo para poder heredar de este template es que en nuestra plantilla que he
 
 Con esto acabamos de crear toda la plantilla que hereda del index.html, sin repetir toda la estructura simplemente modificamos la parte que cambia, el resto permanece igual y se reutiliza.
 
+## Block if
+
+Si deseamos usar un tag condicional lo haremos de la siguiente forma:
+
+```
+{% if branches %}
+    <h1>Si existen sucursales</h1>
+  {% else %}
+    <h1>No existen sucursales</h1>
+  {% endif %}
+```
+
+## Block for
+
+Si queremos usar una estructura repetitiva usaremos el ciclo for:
+
+```
+<ul>
+    {% for branch in branches %}
+        <li>{{ branch.name }}</li>
+    {% endfor %}
+</ul>
+```
+
+## Navegación entre rutas
+Para navegar entre rutas podemos utilizar la tag url para poder acceder a determinada ruta e incluso pasar parametros:
+
+```
+<a href="{% url '<app_name de las rutas>:<nombre de la ruta>' %}"><Texto de liga></a>
+```
+
+## Archivos estaticos
+Para poder agregar archivos estaticos (css, js, imagenes, etc.) debemos agregar una configuración extra en nuestro archivo settings.py:
+```
+STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+```
+
+Con el parametro 'STATICFILES_DIRS' le indicamos a django donde alojaremos nuestros archivos estaticos, en este caso estamos declarando que se encontraran en una carpeta llamada 'static' en la raiz de nuestro proyecto.
+
+para utilizar los archivos estaticos debemos de utilizar e importar tags especificos en nuestros templates.
+
+```
+{% load static %}
+...
+
+<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+```
+
+Utilizamos el tag '{% load static %}' al inicio de nuestro archivo y cuando necesitemos ligar un archivo estatico a nuestro template usamos el tag static '{% static '<ruta al archivo>/<nombre del archivo>.<terminacion del archivo>' %}'
 
 
 # Vistas
@@ -477,9 +527,83 @@ def Create<Nombre del modelo>(request):
     else:
         <nombre del modelo>_form = <Nombre del modelo>Form()
     return render(request, "<nombre del modelo>es/create.html", {"<nombre del modelo>_form": <nombre del modelo>_form})
-
 ```
 
+## Vistas basadas en clases
+
+Las vistas basadas en clase reducen considerablemente el codigo a escribir para tareas repetitivas. Al momento de usar una vista basada en clase en nuestor urls.py necesitamos importar la vista y usar su metodo as_view().
+
+```
+path("<ruta>", <nombre de la vista>.as_view(), name="<nombre de la ruta>"),
+```
+
+Si queremos solo renderizar un template usamos TemplateView
+
+```
+from django.views.generic import TemplateView
+
+...
+class <Nombre de la clase>(TemplateView):
+    template_name = '<ruta al archivo>/<nombre de la plantilla>.html'
+```
+
+Si queremos renderizar un template con una lista de valores consultados usamos ListView
+
+```
+from django.views.generic import ListView
+
+...
+class <Nombre de la clase>(ListView):
+    template_name = '<ruta del archivo>/<nombre de la plantilla>.html'
+    context_object_name = '<nombre del objeto para usar en la plantilla>'
+    model = <Modelo>
+    queryset = model.objects.filter(<consulta a filtrar>) # en caso de no desear filtrar usar .all() en lugar de .filter(...)
+```
+
+Si queremos actualizar un registro podemos usar UpdateView:
+
+```
+from django.views.generic import UpdateView
+from django.urls import reverse_lazy
+
+
+...
+class <Nombre de la clase>(UpdateView):
+    model = <Nombre del modelo>
+    form_class = <Nombre del form>
+    template_name = '<ruta al archivo>/<nombre de la plantilla>.html'
+    success_url = reverse_lazy("<app_name de las url>:<nombre de la ruta>")
+```
+
+Para este caso se utiliza algo llamado reverse_lazy la cual es una funcion de redirección a la ruta deseada una vez tengamos exito en actualizar el registro.
+
+Para eliminar un registro usamos DeleteView:
+
+```
+from django.views.generic import DeleteView
+from django.urls import reverse_lazy
+
+...
+class <Nombre de la clase>(DeleteView):
+    model = <Nombre del modelo>
+    success_url = reverse_lazy("<app_name de las rutas>:<nombre de la ruta>")
+```
+
+Adicionalmente cuando eliminamos un registro usando DeleteView debemos de generar una plantilla especial de la siguiente forma:
+
+```
+<nombre del modelo>_confirm_delete.html
+```
+
+Esta plantilla debe contener un formulario que al ser enviado eliminara el registro. Ejemplo:
+
+```
+<form method="post">
+  {% csrf_token %}
+  Eliminar?
+  <button type="submit">Eliminar</button>
+</form>
+```
 
 # Rutas
 

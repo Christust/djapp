@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,9 +47,7 @@ LOCAL_APPS = [
     "apps.maintenances",
 ]
 
-THIRD_APPS = [
-#"compressor"
-]
+THIRD_APPS = ["compressor"]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
@@ -129,6 +128,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    # other finders..
+    "compressor.finders.CompressorFinder",
+)
 
 """
 STATICFILES_DIRS = [
@@ -153,9 +159,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user model
 AUTH_USER_MODEL = "users.User"
 
-"""
 # Configuration for scss files and compress tag
 COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
 
 COMPRESS_ROOT = BASE_DIR / "static"
-"""
+
+LOGIN_REDIRECT_URL = reverse_lazy("index")
+
+LOGOUT_REDIRECT_URL = reverse_lazy("users:login")
+
+LOGIN_URL = reverse_lazy("users:login")

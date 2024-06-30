@@ -18,9 +18,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from config.views import Home
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("branches/", include("apps.branches.urls")),
-    path("", Home, name="index")
+    path("stores/", include("apps.stores.urls")),
+    path("users/", include("apps.users.urls")),
+    path("", login_required(Home), name="index"),
 ]

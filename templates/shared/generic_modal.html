@@ -1,0 +1,54 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h1 class="modal-title fs-5" id="genericModalLabel">
+        {% block modal_title %}
+          ModalTitle
+        {% endblock %}
+      </h1>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <form method="POST"
+      action="{% block url_action %}
+
+      {% endblock %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        {% block modal_body %}
+
+        {% endblock %}
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+          class="btn {% block close_btn_class %}
+            
+            
+            btn-secondary
+
+
+          {% endblock %}"
+          data-bs-dismiss="modal">
+          {% block close_button %}
+
+          {% endblock %}
+        </button>
+        <button type="submit"
+          class="btn {% block submit_btn_class %}
+            
+            
+            btn-primary
+
+
+          {% endblock %}">
+          {% block submit_button %}
+
+          {% endblock %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% block extrajs %}
+
+{% endblock %}

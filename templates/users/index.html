@@ -1,0 +1,52 @@
+{% extends 'index.html' %}
+
+{% block header %}
+  Users
+{% endblock %}
+{% block title %}
+  Listar user
+{% endblock %}
+{% block body %}
+  <div class="d-flex justify-content-end align-items-center">
+    <div class="col-12 text-end p-3">
+      <a href="{% url 'users:create' %}" class="btn btn-primary">Nuevo User</a>
+    </div>
+  </div>
+  {% if users %}
+    <div class="d-flex justify-content-center">
+      <div class="col-12 p-3">
+        <table class="table patientsHeadClass table-striped">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Lastname</th>
+              <th>Email</th>
+              <th>UserType</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.user_type }}</td>
+                <td>
+                  <a class="btn" href="{% url 'users:update' user.id %}"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <a class="btn" href="{% url 'users:change_password' user.id %}"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_user','{% url 'users:delete' user.id %}')"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <h1>No existen users</h1>
+  {% endif %}
+  <div class="modal fade" id="modal_user" role="dialog"></div>
+{% endblock %}

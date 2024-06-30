@@ -1,18 +1,18 @@
 {% extends 'index.html' %}
 {% block title %}
-  Crear branch
+  Edit Branch
 {% endblock %}
 {% block header %}
   Branch
 {% endblock %}
 
 {% block body %}
-  <form method="POST" action="{% url 'branches:create' %}">
+  <form method="POST" action="{% url 'branches:update' object.id %}">
     {% csrf_token %}
     <div class="modal-body">{{ form.as_p }}</div>
     <div class="modal-footer">
       <a href="{% url 'branches:index' %}" class="btn btn-secondary me-1">Cancelar</a>
-      <button type="submit" class="btn btn-primary">Confirmar</button>
+      <button type="submit" class="btn btn-primary">Editar</button>
     </div>
   </form>
 {% endblock %}

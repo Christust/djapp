@@ -1,0 +1,33 @@
+{% extends 'index.html' %}
+{% block title %}
+  Editar Item
+{% endblock %}
+{% block header %}
+  Item
+{% endblock %}
+
+{% block body %}
+  <form method="POST" action="{% url 'stores:update_item' object.id %}">
+    {% csrf_token %}
+    <div class="modal-body">
+      <label>{{ form.name.label }}</label>
+      {{ form.name }}
+      <label>{{ form.description.label }}</label>
+      {{ form.description }}
+      <label>{{ form.brand.label }}</label>
+      {{ form.brand }}
+      <label>{{ form.barcode.label }}</label>
+      {{ form.barcode }}
+      <div>
+        {{ form.consumable }}
+        <label class="form-check-label mb-3">{{ form.consumable.label }}</label>
+      </div>
+      <label>{{ form.units.label }}</label>
+      {{ form.units }}
+    </div>
+    <div class="modal-footer">
+      <a href="{% url 'stores:index_item' %}" class="btn btn-secondary me-1">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Editar</button>
+    </div>
+  </form>
+{% endblock %}

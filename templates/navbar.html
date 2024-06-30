@@ -1,0 +1,46 @@
+<nav class="sidebar">
+  <div class="sidebar__sidebarRouteContainer">
+    <a class="sidebar__sidebarRoute" href="{% url 'index' %}">
+      <i class="fa-solid fa-microchip me-3"></i>
+      <h4 class="text-white m-0">DAPI</h4>
+    </a>
+    <hr />
+  </div>
+  <div class="d-flex flex-column">
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'branches:index' %}">
+        <i class="fa-solid fa-utensils me-3"></i>
+        <span>Branches</span>
+      </a>
+    </div>
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'users:index' %}">
+        <i class="fa-solid fa-pizza-slice me-3"></i>
+        <span>Users</span>
+      </a>
+    </div>
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:index_store' %}">
+        <i class="fa-solid fa-pizza-slice me-3"></i>
+        <span>Stores</span>
+      </a>
+    </div>
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:index_item' %}">
+        <i class="fa-solid fa-pizza-slice me-3"></i>
+        <span>Items</span>
+      </a>
+    </div>
+    <form method="POST" action="{% url 'users:logout' %}">
+      <div class="sidebar__sidebarRouteContainer">
+        {% csrf_token %}
+        <button class="btn w-100 sidebar__sidebarRoute sidebar__sidebarRoute--button" type="submit">
+          <span class="text-white">
+            <i class="fa-solid fa-door-open me-3"></i>
+            <span>Logout</span>
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</nav>
