@@ -37,6 +37,12 @@
         <span>Items</span>
       </a>
     </div>
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:material_requests:index' %}">
+        <i class="fa-solid fa-boxes-packing me-3"></i>
+        <span>Material Requests</span>
+      </a>
+    </div>
     <form method="POST" action="{% url 'users:logout' %}">
       <div class="sidebar__sidebarRouteContainer">
         {% csrf_token %}

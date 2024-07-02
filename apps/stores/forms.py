@@ -184,3 +184,13 @@ class ItemRequirementForm(forms.ModelForm):
             "item": forms.Select(attrs={"class": "form-control mb-3"}),
             "material_requirement": forms.Select(attrs={"class": "form-control mb-3"}),
         }
+
+ItemRequestFormSet = forms.inlineformset_factory(
+    parent_model=models.MaterialRequest,
+    model=models.ItemRequest,
+    form=ItemRequestForm,
+    fields=('item', 'amount'),
+    extra=1,  # Número inicial de formularios de ItemRequest mostrados
+    can_delete=False
+)
+
