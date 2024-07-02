@@ -7,11 +7,11 @@
 {% endblock %}
 
 {% block body %}
-  <form method="POST" action="{% url 'stores:update_store' object.id %}">
+  <form method="POST" action="{% url 'stores:update' object.id %}">
     {% csrf_token %}
     <div class="modal-body">{{ form.as_p }}</div>
     <div class="modal-footer">
-      <a href="{% url 'stores:index_store' %}" class="btn btn-secondary me-1">Cancelar</a>
+      <a href="{% url 'stores:index' %}" class="btn btn-secondary me-1">Cancelar</a>
       <button type="submit" class="btn btn-primary">Editar</button>
     </div>
   </form>

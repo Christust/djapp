@@ -3,7 +3,8 @@
   Eliminar Stock
 {% endblock %}
 {% block url_action %}
-  {% url 'stores:stocks:delete' pk_store=store.id pk=object.id %}
+  {% comment %} {% url 'stores:stocks:delete' pk_store=store.id pk=object.id %} {% endcomment %}
+  {% url 'stores:stocks:delete' object.id %}
 {% endblock %}
 {% block modal_body %}
   ¿Esta seguro de querer eliminar este stock?

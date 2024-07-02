@@ -8,11 +8,12 @@
 {% endblock %}
 {% block body %}
   <div class="d-flex justify-content-end align-items-center">
-    <div class="d-flex col-12 justify-content-between p-3">
-      <h3 class="m-0">{{ store.name }} - {{ store.branch }}</h3>
+    <div class="d-flex col-12 justify-content-end p-3">
+      {% comment %} <h3 class="m-0">{{ store.name }} - {{ store.branch }}</h3> {% endcomment %}
       <div>
-        <a href="{% url 'stores:index_store' %}" class="btn btn-secondary me-1">Regresar</a>
-        <a href="{% url 'stores:stocks:create' pk_store=store.id %}" class="btn btn-primary">Nuevo Stock</a>
+        {% comment %} <a href="{% url 'stores:index' %}" class="btn btn-secondary me-1">Regresar</a>
+        <a href="{% url 'stores:stocks:create' pk_store=store.id %}" class="btn btn-primary">Nuevo Stock</a> {% endcomment %}
+        <a href="{% url 'stores:stocks:create' %}" class="btn btn-primary">Nuevo Stock</a>
       </div>
     </div>
   </div>
@@ -25,6 +26,7 @@
             <tr>
               <th>Id</th>
               <th>Item</th>
+              <th>Store</th>
               <th>Amount</th>
               <th>Actions</th>
             </tr>
@@ -34,10 +36,13 @@
               <tr>
                 <td>{{ stock.id }}</td>
                 <td>{{ stock.item }}</td>
+                <td>{{ stock.store }}</td>
                 <td>{{ stock.amount }}</td>
                 <td>
-                  <a href="{% url 'stores:stocks:update' pk_store=store.id pk=stock.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
-                  <button class="btn" onclick="openModal('#modal_stock','{% url 'stores:stocks:delete' pk_store=store.id pk=stock.id %}')"><i class="fa-solid fa-trash-can"></i></button>
+                  {% comment %} <a href="{% url 'stores:stocks:update' pk_store=store.id pk=stock.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_stock','{% url 'stores:stocks:delete' pk_store=store.id pk=stock.id %}')"><i class="fa-solid fa-trash-can"></i></button> {% endcomment %}
+                  <a href="{% url 'stores:stocks:update' stock.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_stock','{% url 'stores:stocks:delete' stock.id %}')"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
             {% endfor %}

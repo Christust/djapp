@@ -9,25 +9,31 @@
   <div class="d-flex flex-column">
     <div class="sidebar__sidebarRouteContainer">
       <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'branches:index' %}">
-        <i class="fa-solid fa-utensils me-3"></i>
+        <i class="fa-solid fa-code-branch me-3"></i>
         <span>Branches</span>
       </a>
     </div>
     <div class="sidebar__sidebarRouteContainer">
       <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'users:index' %}">
-        <i class="fa-solid fa-pizza-slice me-3"></i>
+        <i class="fa-solid fa-users me-3"></i>
         <span>Users</span>
       </a>
     </div>
     <div class="sidebar__sidebarRouteContainer">
-      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:index_store' %}">
-        <i class="fa-solid fa-pizza-slice me-3"></i>
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:index' %}">
+        <i class="fa-solid fa-box me-3"></i>
         <span>Stores</span>
       </a>
     </div>
     <div class="sidebar__sidebarRouteContainer">
-      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:index_item' %}">
-        <i class="fa-solid fa-pizza-slice me-3"></i>
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:stocks:index' %}">
+        <i class="fa-solid fa-boxes-stacked me-3"></i>
+        <span>Stocks</span>
+      </a>
+    </div>
+    <div class="sidebar__sidebarRouteContainer">
+      <a class="sidebar__sidebarRoute sidebar__sidebarRoute--button" href="{% url 'stores:items:index' %}">
+        <i class="fa-solid fa-boxes-packing me-3"></i>
         <span>Items</span>
       </a>
     </div>

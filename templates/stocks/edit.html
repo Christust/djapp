@@ -7,11 +7,19 @@
 {% endblock %}
 
 {% block body %}
-  <form method="POST" action="{% url 'stores:stocks:update' pk_store=store.id pk=object.id %}">
+  {% comment %} <form method="POST" action="{% url 'stores:stocks:update' pk_store=store.id pk=object.id %}">
     {% csrf_token %}
     <div class="modal-body">{{ form.as_p }}</div>
     <div class="modal-footer">
       <a href="{% url 'stores:stocks:index' pk_store=store.id %}" class="btn btn-secondary me-1">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Editar</button>
+    </div>
+  </form> {% endcomment %}
+  <form method="POST" action="{% url 'stores:stocks:update' object.id %}">
+    {% csrf_token %}
+    <div class="modal-body">{{ form.as_p }}</div>
+    <div class="modal-footer">
+      <a href="{% url 'stores:stocks:index' %}" class="btn btn-secondary me-1">Cancelar</a>
       <button type="submit" class="btn btn-primary">Editar</button>
     </div>
   </form>

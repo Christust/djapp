@@ -1,16 +1,18 @@
-{% extends 'shared/generic_modal.html' %}
-{% block modal_title %}
+{% extends 'index.html' %}
+{% block title %}
   Crear Item Requirement
 {% endblock %}
-{% block url_action %}
-  {% url 'item_requirements:create' %}
+{% block header %}
+  Item Requirement
 {% endblock %}
-{% block modal_body %}
-  {{ form.as_p }}
-{% endblock %}
-{% block close_button %}
-  Cancelar
-{% endblock %}
-{% block submit_button %}
-  Confirmar
+
+{% block body %}
+  <form method="POST" action="{% url 'stores:item_requirements:create' %}">
+    {% csrf_token %}
+    <div class="modal-body">{{ form.as_p }}</div>
+    <div class="modal-footer">
+      <a href="{% url 'stores:item_requirements:index' %}" class="btn btn-secondary me-1">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Confirmar</button>
+    </div>
+  </form>
 {% endblock %}

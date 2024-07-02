@@ -3,7 +3,7 @@
   Eliminar Material Request
 {% endblock %}
 {% block url_action %}
-  {% url 'material_requests:delete' object.id %}
+  {% url 'stores:material_requests:delete' pk_store=store.id pk=object.id %}
 {% endblock %}
 {% block modal_body %}
   ¿Esta seguro de querer eliminar este material request?

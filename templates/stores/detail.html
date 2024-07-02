@@ -1,19 +1,20 @@
 {% extends 'shared/generic_modal.html' %}
 {% block modal_title %}
-  Eliminar Item
+  Detalle Store
 {% endblock %}
 {% block url_action %}
-  {% url 'stores:items:delete' object.id %}
+  {% url 'stores:index' %}
 {% endblock %}
 {% block modal_body %}
-  ¿Esta seguro de querer eliminar este item?
+  {{ object.name }}<br />
+  {{ object.branch }}
 {% endblock %}
 {% block close_button %}
-  Cancelar
+  Aceptar
+{% endblock %}
+{% block close_btn_class %}
+  btn-primary
 {% endblock %}
 {% block submit_btn_class %}
-  btn-danger
-{% endblock %}
-{% block submit_button %}
-  Eliminar item
+  d-none
 {% endblock %}

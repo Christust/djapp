@@ -9,7 +9,7 @@
 {% block body %}
   <div class="d-flex justify-content-end align-items-center">
     <div class="col-12 text-end p-3">
-      <button class="btn btn-primary" onclick="openModal('#modal_material_request', '{% url 'material_requests:create' %}')">Nuevo Branch</button>
+      <a href="{% url 'stores:material_requests:create' %}" class="btn btn-primary">Nuevo Branch</a>
     </div>
   </div>
   {% if material_requests %}
@@ -35,8 +35,8 @@
                 <td>{{ material_request.state }}</td>
                 <td>{{ material_request.city }}</td>
                 <td>
-                  <button class="btn" onclick="openModal('#modal_material_request', '{% url 'material_requests:update' material_request.id %}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="btn" onclick="openModal('#modal_material_request','{% url 'material_requests:delete' material_request.id %}')"><i class="fa-solid fa-trash-can"></i></button>
+                  <a href="{% url 'stores:material_requests:update' pk=material_request.id %}" class="btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                  <button class="btn" onclick="openModal('#modal_material_request','{% url 'stores:material_requests:delete' pk=material_request.id %}')"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
             {% endfor %}

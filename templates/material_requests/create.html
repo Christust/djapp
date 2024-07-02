@@ -1,16 +1,18 @@
-{% extends 'shared/generic_modal.html' %}
-{% block modal_title %}
+{% extends 'index.html' %}
+{% block title %}
   Crear Material Request
 {% endblock %}
-{% block url_action %}
-  {% url 'material_requests:create' %}
+{% block header %}
+  Material Request
 {% endblock %}
-{% block modal_body %}
-  {{ form.as_p }}
-{% endblock %}
-{% block close_button %}
-  Cancelar
-{% endblock %}
-{% block submit_button %}
-  Confirmar
+
+{% block body %}
+  <form method="POST" action="{% url 'stores:material_requests:create' %}">
+    {% csrf_token %}
+    <div class="modal-body">{{ form.as_p }}</div>
+    <div class="modal-footer">
+      <a href="{% url 'stores:material_requests:index' %}" class="btn btn-secondary me-1">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Confirmar</button>
+    </div>
+  </form>
 {% endblock %}
