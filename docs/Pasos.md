@@ -1,65 +1,112 @@
-# Pasos a seguir
+# Inicio del proyecto
 
-Crear la carpeta del proyecto, y dentro de la misma crear un entorno virtual
-
-```
-virtualenv venv
-```
-
-Instalar Django
+Empiezas el proyecto:
 
 ```
-pip install django
+django-admin startproject dapi
 ```
 
-Iniciar el proyecto en esa misma carpeta
+Te mueves al proyecto:
 
 ```
-django-admin startproject config .
+cd dapi
 ```
 
-Crear la carpeta apps, y dentro de ella ir creando las apps a utilizar.
-
-Crear la carpeta templates y dentro de ella se crearan las plantillas a renderizar.
-
-Para que nuestro proyecto tome las platillas de la carpeta templates necesitamos configurar en settings.py el array DIRS:
+Empiezas un entorno virtual:
 
 ```
-...
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Instalas las dependencias del proyecto:
+
+```
+pip install Django
+pip install djangorestframework
+pip install django-simple-history
+pip install Pillow
+pip install drf-yasg
+pip install django-cors-headers
+pip install djangorestframework-simplejwt
+pip install django-extensions
+```
+
+Para un mayor control podemos dividir las apps en settings.py, aprovechamos para agregar las apps de terceros que acabamos de instalar:
+
+```
+BASE_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
-...
+
+LOCAL_APPS = []
+
+THIRD_APPS = [
+    "rest_framework",
+    "simple_history",
+    "drf_yasg",
+    "corsheaders",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "django_extensions",
+]
+
+INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 ```
 
-Si queremos cambiar el idioma de nuestro sistema podemos configurar la sección de lenguaje, cambiando la cadena de texto de "LANGUAGE_CODE" al sistema que deseemos, en este caso a español:
+Agregamos las configuraciones para seguridad y cors en el proyecto en nuestro archivo settings.py del folder principal:
 
 ```
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
 
-LANGUAGE_CODE = "es" 
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
 
-TIME_ZONE = "UTC"
+# Auth Rest
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+}
 
-USE_I18N = True
-
-USE_TZ = True
+# SIMPLE JWT
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
 ```
 
-Cuando recien creamos un proyecto no necesitamos crear un modelo "User", Django ya crea uno por defecto, pero si nosotros deseamos crear nuestro propio modelo personalizado con atributos especificos podemos crear la aplicacion users y en su archivo models.py crear nuestro propio manager de usuarios (el atributo objects con el que hacemos consultas o creamos usuarios) y nuestro propio modelo usuario:
+Creamos la app que gestionara a nuestros usuarios:
+
+```
+mkdir apps
+cd apps
+django-admin startapp users
+```
+
+Modificamos el archivo apps.py de la app users:
+
+```
+name = "apps.users"
+```
+
+Cada que creemos una app colocaremos el nombre de su carpeta contedora en caso de que no esten en la raiz del proyecto.
+
+Dentro de la app users y en su archivo models.py agregamos:
 
 ```
 # Importamos models para crear nuestros atributos de nuestro modelo
@@ -69,22 +116,25 @@ from django.db import models
 # Importamos BaseUserManager para crear un manager para nuestro modelo, el manager
 # es el atributo llamado objects que gestiona las funciones create_user por ejemplo
 # Importamos PermissionsMixin para heredar a nuestro usuario el mixin de permisos y grupos
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 # Importamos la clase HistoricalRecords, una app de terceros que lleva un historico de las
 # acciones de nuestro modelo
+from simple_history.models import HistoricalRecords
+
 
 # Create your models here.
 class UserManager(BaseUserManager):
     # Función base que utilizaran nuestras funciones para crear usuarios normales o superusuario
     def _create_user(
         self,
+        username: str,
         email: str,
         name: str,
         last_name: str,
-        user_type: str,
         password: str | None,
         is_staff: bool,
+        is_superuser: bool,
         **extra_fields,
     ):
         """
@@ -93,11 +143,12 @@ class UserManager(BaseUserManager):
 
         # Instanciamos el modelo con los parametros recibidos
         user = self.model(
+            username=username,
             email=email,
             name=name,
             last_name=last_name,
-            user_type=user_type,
             is_staff=is_staff,
+            is_superuser=is_superuser,
             **extra_fields,
         )
 
@@ -111,10 +162,10 @@ class UserManager(BaseUserManager):
     # Función para crear usuarios normales
     def create_user(
         self,
+        username: str,
         email: str,
         name: str,
         last_name: str,
-        user_type: str,
         password: str | None = None,
         **extra_fields,
     ):
@@ -124,22 +175,16 @@ class UserManager(BaseUserManager):
 
         # Con los parametros recibidos creamos un usuario normal llamando _create_user
         return self._create_user(
-            email,
-            name,
-            last_name,
-            user_type,
-            password,
-            False,
-            **extra_fields,
+            username, email, name, last_name, password, False, False, **extra_fields
         )
 
     # Función para crear superusuarios
     def create_superuser(
         self,
+        username: str,
         email: str,
         name: str,
         last_name: str,
-        user_type: str,
         password: str | None = None,
         **extra_fields,
     ):
@@ -149,53 +194,41 @@ class UserManager(BaseUserManager):
 
         # Con los parametros recibidos creamos un superusuario llamando _create_user
         return self._create_user(
-            email,
-            name,
-            last_name,
-            user_type,
-            password,
-            True,
-            **extra_fields,
+            username, email, name, last_name, password, True, True, **extra_fields
         )
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    # Enum de tipos de usuario
-    class UserType(models.TextChoices):
-        SUPER_ADMIN = "superadmin"
-        ADMIN = "admin"
-        COMMON = "common"
-
+class User(AbstractBaseUser):
     # Atributo principal de nuestro modelo persoanlizado
-    email = models.EmailField("Email", unique=True, max_length=100)
+    username = models.CharField("Username", unique=True, max_length=100)
 
     # Atributos extra que personalizamos para nuestro modelo
-    name = models.CharField("Name", max_length=100, blank=False, null=False)
-
-    last_name = models.CharField("Lastname", max_length=100, blank=False, null=False)
-
-    user_type = models.CharField(
-        "User type", max_length=20, choices=UserType.choices, blank=False, null=False
-    )
-
-    # Timestamps
+    email = models.EmailField("Email", unique=True, max_length=100)
+    name = models.CharField("Name", max_length=100, blank=True, null=True)
+    last_name = models.CharField("Lastname", max_length=100, blank=True, null=True)
+    image = models.ImageField("Image", upload_to="perfil/", max_length=200, height_field=None, width_field=None, blank=True, null=True)  # type: ignore
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # Atributos requeridos para nuestro mixin de permisos
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=True)
 
-    @property
-    def full_name(self):
-        return f"{self.name} {self.last_name}"
+    def has_perm(self, perm, obj=None):
+        return True
 
-    @property
-    def is_superuser(self):
-        return self.user_type == self.UserType.SUPER_ADMIN
+    def has_module_perms(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
 
     # Atributo que sera nuestro manager
     objects = UserManager()
+
+    # Atributo necesario para el historial de acciones
+    historical = HistoricalRecords()
 
     # Clase Meta, declaramos aqui nuestro metadatos para el modelo
     class Meta:
@@ -206,485 +239,428 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Atributos necesarios para un modelo de usuario
 
     # El atributo USERNAME_FIELD es para delcarar el atributo principal de la clase
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "username"
 
     # El atributo REQUIRED_FIELDS se usa para declarar los atributos requeridos al crear un usuario
-    REQUIRED_FIELDS = ["name", "last_name", "user_type"]
+    REQUIRED_FIELDS = ["email", "name", "last_name"]
 
     # Función para declarar la llave natural del modelo, si hay relaciones uno a muchos o muchos
     # a muchos, en lugar de mostrar el id, mostrara lo que esta función nos retorne
     def natural_key(self):
-        return self.email
+        return self.username
 
     # Función para retornar un string al llamar una instancia de este modelo
     def __str__(self):
-        return f"{self.full_name}"
+        return f"User {self.username}"
+
 
 ```
 
-Despues de esto debemos registrar en nuestro archivo settings.py la aplicacion y que este sera nuestro modelo users:
+Agregamos la app users a nuestras apps locales:
 
 ```
-...
-LOCAL_APPS = [
-    ...
-    "apps.users",
-    ...
-]
-...
+LOCAL_APPS = ["apps.users"]
+```
 
-...
-# CUSTOM
+Agregamos en settings.py el modelo customizado de usuario que creamos:
 
+```
+# Custom user
 AUTH_USER_MODEL = "users.User"
-...
+
 ```
 
-Sea si usamos el usuario por defecto de django o creamos nuestro propio modelo, el siguiente paso sera correr las primeras migraciones:
+Ejecutamos las migraciones:
 
 ```
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-# Aplicaciones
-
-Para crear apliaciones debemos posicionarnos en la carpeta donde la crearemos y ejecutar:
+Creamos un superusuario:
 
 ```
-django-admin startapp <nombre de la app>
+python manage.py createsuperuser
 ```
 
-Si creamos apps nuevas dentro de la carpeta apps debemos agregar el nombre de la carpeta al string que se declara dentro de app.py para cada apliacion:
+En la app users crearemos el archivo serializers.py:
 
 ```
-from django.apps import AppConfig
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from apps.users.models import User
 
 
-class <Nombre de la app>Config(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.<nombre de la app>'
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ["created_at", "updated_at", "last_login"]
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data["password"])
+        user.save()
+        return user
+
+
+class UserOutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ["password", "created_at", "updated_at", "last_login"]
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    pass
+
 ```
 
-Para agregar la aplicación a nuestro settings.py agregamos el string declarado en el paso anterior al array de apps:
+En la app users en su archivo views.py colocamos lo siguiente:
 
 ```
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from rest_framework import status, generics, viewsets
+from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken
+from apps.users.serializers import (
+    UserSerializer,
+    UserOutSerializer,
+    CustomTokenObtainPairSerializer,
+    PasswordSerializer,
+)
+from apps.users.models import User
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class UserViewSet(viewsets.GenericViewSet):
+    model = User
+    serializer_class = UserSerializer
+    out_serializer_class = UserOutSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+
+    def get_object(self, pk):
+        return get_object_or_404(self.queryset, pk=pk)
+
+    def list(self, request):
+        users = self.queryset.all()
+        users_out_serializer = self.out_serializer_class(users, many=True)
+        return Response(data=users_out_serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        user_serializer = self.serializer_class(data=request.data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            user_out_serializer = self.out_serializer_class(user_serializer.data)
+            return Response(
+                data=user_out_serializer.data, status=status.HTTP_201_CREATED
+            )
+        return Response(
+            data=user_serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    def retrieve(self, request, pk):
+        user = self.get_object(pk)
+        user_out_serializer = self.out_serializer_class(user)
+        return Response(data=user_out_serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, pk):
+        user = self.get_object(pk)
+        user_out_serializer = self.out_serializer_class(
+            user, data=request.data, partial=True
+        )
+        if user_out_serializer.is_valid():
+            user_out_serializer.save()
+            return Response(
+                data=user_out_serializer.data, status=status.HTTP_202_ACCEPTED
+            )
+        return Response(
+            data=user_out_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=True, methods=["post", "put"])
+    def set_password(self, request, pk=None):
+        user = self.get_object(pk)
+        password_serializer = PasswordSerializer(data=request.data)
+        if password_serializer.is_valid():
+            user.set_password(password_serializer.validated_data["password"])
+            user.save()
+            return Response(
+                data={"message": "Password updated"}, status=status.HTTP_200_OK
+            )
+        return Response(
+            data=password_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def destroy(self, request, pk):
+        user = self.get_object(pk)
+        user.is_active = False
+        user.save()
+        return Response(data={"message": "Deleted"}, status=status.HTTP_200_OK)
+
+
+class Login(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username", "")
+        password = request.data.get("password", "")
+        user = authenticate(username=username, password=password)
+        if user and user.is_active:
+            login_serializer = self.serializer_class(data=request.data)
+            if login_serializer.is_valid():
+                user_serializer = UserOutSerializer(user)
+                return Response(
+                    {
+                        "token": login_serializer.validated_data.get("access"),
+                        "refresh": login_serializer.validated_data.get("refresh"),
+                        "user": user_serializer.data,
+                    },
+                    status.HTTP_200_OK,
+                )
+            return Response(
+                {"error": "No existe el usuario"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            {"error": "No existe el usuario"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class Logout(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        if user:
+            token = RefreshToken(request.data.get("refresh_token"))
+            token.blacklist()
+            return Response({"message": "Sesion cerrada"})
+        return Response(
+            {"error": "No existe el usuario"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+```
+
+Creamos el archivo urls.py dentro de nuestra aplicación users y le colocamos el router con nuestro viewSet de usuarios:
+
+```
+from rest_framework.routers import DefaultRouter
+from apps.users import views
+
+router = DefaultRouter()
+
+router.register(r"", views.UserViewSet)
+
+urlpatterns = [] + router.urls
+```
+
+Para agregar las rutas ahora hacemos un include en el archivo urls.py principal del proyecto:
+
+```
+from django.urls import ..., include
+from rest_framework_simplejwt.views import TokenRefreshView
+from apps.users.views import Login, Logout
 ...
-BASE_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-]
 
-LOCAL_APPS = [
+urlpatterns = [
     ...
-    "apps.<nombre de la app>",
+    path("login/", Login.as_view(), name="login"),
+    path("logout/", Logout.as_view(), name="logout"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("users/", include("apps.users.urls")),
     ...
 ]
-
-THIRD_APPS = []
-
-INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
-...
 ```
 
-# Modelos
-
-Cuanto se crea una app podemos crear los modelos que se encargara de gestionar la app. Para ello en el archivo models.py se importa models de django.db, para crear nuestras clases las cuales representaran tablas en nuestra base de datos, esta clase debe de heredar de models.Model. Los atributos de las clases generadas en el archivo models.py seran los atributos de nuestra tabla.
+Si en algun punto necesitamos de un modelo base para declarar atributos y metodos compartidos podemos crearlo:
 
 ```
 from django.db import models
 
-
-# Create your models here.
-class <Nombre del modelo>(models.Model):
-    attr1 = models.CharField("Atributo 1", max_length=50, blank=False, null=False)
-
-    def natural_key(self):
-        return self.attr1
-
-    def __str__(self):
-        return f"{self.attr1}"
+class BaseModel(models.Model):
+id = models.AutoField(primary_key=True)
+state = models.BooleanField("Estado", default=True)
+created_at = models.DateTimeField("Fecha de creación", auto_now_add=True)
+updated_at = models.DateTimeField("Fecha de actualización", auto_now=True)
+deleted_at = models.DateTimeField("Fecha de eliminación", auto_now=True)
 
     class Meta:
-        verbose_name = <Nombre en singular>
-        verbose_name_plural = <Nombre en plural>
-```
-
-Despues de crear los modelos necesarios procederemos a crear las migraciones:
+        abstract = True
+        verbose_name = "Base Model"
+        verbose_name_plural = "Base Models"
 
 ```
-python manage.py makemigrations
-python manage.py migrate
-```
 
-Si se desea crear una migracion vacia para por ejemplo crear datos en una migracion ejecutamos:
+En el modelo que querramos que tenga esos atributos solo debemos heredarlo de BaseModel.
 
-```
-python manage.py makemigrations <nombre de la app> --empty --name <nombre descriptivo de lo que se hara >
-```
+# Serializers
 
-Posteriormente nos dirigimos a la migracion creada y agregamos la funcion que debe crear los registros y agregarla al array que ejecutara dicha función:
+Los serializers son clases cambian a json los modelos de Django y viceversa.
 
 ```
-from django.db import migrations
+from rest_framework import serializers
+from apps.example.models import ExampleModel
 
-def crear_registros(apps, schema_editor):
-    MiModelo = apps.get_model('miapp', 'MiModelo')
-    MiModelo.objects.create(campo1='valor1', campo2='valor2')
-    MiModelo.objects.create(campo1='valor3', campo2='valor4')
-    # Puedes agregar más registros aquí según sea necesario
-
-class Migration(migrations.Migration):
-
-    dependencies = [
-        ('miapp', 'xxxx_migration_anterior'),
-    ]
-
-    operations = [
-        migrations.RunPython(crear_registros),
-    ]
-```
-
-## Relaciones
-
-Las relaciones entre tablas describen el como se enlazan y se deben de comportar las tablas. El flujo de datos que se tiene y como se comportara el sistema.
-
-### One to one
-
-Si queremos declarar en un modelo que existe una relación de uno a uno debemos agregar el atributo al modelo de la siguiente forma:
-
-```
-<nombre del otro modelo> = models.OneToOneField(<Nombre del otro modelo>, on_delete=models.CASCADE, blank=False, null=False)
-```
-
-Este atributo solo se debe crear en uno de los dos modelos con la relacion uno a uno.
-
-### One to many
-
-Si queremos declarar un modelo con relacion uno a muchos debemos agregar la siguiente clausula a un atributo que represente al modelo que posee dichos modelos, para identificar quien debe llevar la relacion foranea debemos pensar que modelo pertenece a que modelo. Un ejemplo seria un modelo tiene muchos elementos de otro modelo, y dicho otro modelo pertenece al primer modelo. Entonces bajo esta logica quien debe llevar la clave foranea seria nuestro segundo modelo.
-
-```
-<nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>, on_delete=models.CASCADE, blank=False, null=False)
-```
-
-### Many to many
-
-La relación muchos a muchos puede estar en cualquier modelo que se desee, solo se debe declarar en uno de los dos modelos
-
-```
-<nombre del otro modelo> = models.ForeignKey(<Nombre del otro modelo>)
-```
-
-### ORM
-
-Para interactuar con la base de datos utilizamos el ORM que Django tiene por defecto. Para poder interactuar con un modelo debemos hacerlo atraves de su atributo objects e indicandole la acción a realizar. Puede ser consultar los registros, guardar un registro nuevo, modificar un registro existende o eliminar un registro. Estas son las acciones mas comunes pero hay mas funciones de ayuda proporcionadas por el atributo object para realizar operaciones mas complejas.
-
-Ejemplo:
-
-```
-from apps.<nombre de la aplicacion>.models import <Nombre del modelo>
-
-<Nombre del modelo>.objects.create(atributo1 = <valor a usar>, ...) # Creamos un registro de forma directa
-
-nuevo_registro = <Nombre del modelo>(atributo1 = <valor a usar>, ...) # Intanciamos un nuevo registro sin guardar
-
-nuevo_registro.save() # Guardamos el registro
-
-<Nombre del modelo>.objects.all() # Traemos todos los registros sin ningun tipo de filtro
-
-<Nombre del modelo>.objects.filter(atributo1 = <valor a filtrar>) # Traemos todos los registro que cumplan las codiciones del filtro
-
-<Nombre del modelo>.objects.get(id = 1) # Traemos el primer valor que se consiga que cumpla las condiciones del filtro
-```
-
-# Plantillas
-
-Las plantillas sera el html que se mostrara en el proyecto, estas pueden estar alojadas en cada apliación o en una carpeta especifica llamada templates en la raiz de nuestro proyecto. Sea donde sea que decidamos alojar las plantillas, estas no son mas que archivos html que nuestros controladores renderizaran al final de cada función llamada por un endpoint. El punto mas fuerte de las plantillas es que podemos reutilizar layouts o plantillas enteras usando los tags de Django.
-
-La manera mas usual de trabajar es tener en la raiz de la carpeta templates los layouts que usaremos, o las bases de las situaciones mas reptetivas de nuestro sistema.
-
-Crearemos un index.html en la raiz del template y agregamos lo siguiente:
-
-```
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{% block title %}Index{% endblock title %}</title>
-    <link rel="stylesheet" href="">
-    {% block extracss %}{% endblock extracss %}
-</head>
-<body>
-    {% block body %}
-    <h1>Index home</h1>
-    {% endblock body %}
-    {% block extrajs %}
-    {% endblock extrajs %}
-</body>
-</html>
-```
-
-En el ejemplo anterior usamos un tag especial llamado "block" el cual nos servira para herencia de templates, lo que escribamos entre este tag sera el valor por defecto que tendra, si nosotrs heredamos de este template, podremos utilizar los mismos tag para sobreescribir sus valores en la nueva plantilla.
-
-El ejmplo para poder heredar de este template es que en nuestra plantilla que heredera de el, no volveremos a escribir todo el html, solo necesitaremos escribir las partes que sabemos deben ser diferentes y que estan representadas por los bloques:
-
-```
-{% extends "index.html" %}
-{% block title %} Crear branch {% endblock title %}
-{% block body %}
-    <form method="POST">
-        {% csrf_token %}
-        {{ branch_form.as_p }}
-        <button type="submit">Crear</button>
-    </form>
-{% endblock body %}
-```
-
-Con esto acabamos de crear toda la plantilla que hereda del index.html, sin repetir toda la estructura simplemente modificamos la parte que cambia, el resto permanece igual y se reutiliza.
-
-## Block if
-
-Si deseamos usar un tag condicional lo haremos de la siguiente forma:
-
-```
-{% if branches %}
-    <h1>Si existen sucursales</h1>
-  {% else %}
-    <h1>No existen sucursales</h1>
-  {% endif %}
-```
-
-## Block for
-
-Si queremos usar una estructura repetitiva usaremos el ciclo for:
-
-```
-<ul>
-    {% for branch in branches %}
-        <li>{{ branch.name }}</li>
-    {% endfor %}
-</ul>
-```
-
-## Navegación entre rutas
-Para navegar entre rutas podemos utilizar la tag url para poder acceder a determinada ruta e incluso pasar parametros:
-
-```
-<a href="{% url '<app_name de las rutas>:<nombre de la ruta>' %}"><Texto de liga></a>
-```
-
-## Archivos estaticos
-Para poder agregar archivos estaticos (css, js, imagenes, etc.) debemos agregar una configuración extra en nuestro archivo settings.py:
-```
-STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-```
-
-Con el parametro 'STATICFILES_DIRS' le indicamos a django donde alojaremos nuestros archivos estaticos, en este caso estamos declarando que se encontraran en una carpeta llamada 'static' en la raiz de nuestro proyecto.
-
-para utilizar los archivos estaticos debemos de utilizar e importar tags especificos en nuestros templates.
-
-```
-{% load static %}
-...
-
-<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
-```
-
-Utilizamos el tag '{% load static %}' al inicio de nuestro archivo y cuando necesitemos ligar un archivo estatico a nuestro template usamos el tag static '{% static '<ruta al archivo>/<nombre del archivo>.<terminacion del archivo>' %}'
-
-
-# Vistas
-
-Las vistas con los controladores de nuestro sistema, en los archivos views.py se encontraran las funciones que (enlzadas a una ruta) determinaran el comportamiento de nuestro sistema cuando consultamos o interactuamos con determinadas rutas.
-
-Para agregar una funcion a nuestra vista basta con crear una funcion basica en python que reciba un parametro llamado "request", este parametro es obligatorio ya que representa la petición del cliente a ese endpoint en especifico, al final de una función de vista debemos retornar algo, para este caso de prueba usaremos la función "render", que viene importada por defecto en los archivos views.py creados automaticamente. La función render recibe dos parametros como minimo, el primero debe ser la peticion ("request") y el segundo el template que se debe mostrar una vez terminado el proceso que realiza el endpoint.
-
-```
-from django.shortcuts import render
-
-# Create your views here.
-def <nombre de la funcion>(request):
-    return render(request, "<ruta de la carpeta>/<nombre del archivo>.html") 
-```
-
-En este caso en concreto se debe agregar la ruta de la carpeta contenedora, esto se hace en caso de que el archivo no se encuentre en la raiz de la carpeta "templates", si dentro de "templates" agregamos una subcarpeta con el nombre de la aplicación por ejemplo (para tener un mejor control de los archivos pertenecientes a la misma) debemos agregar a la cadena de texto de render la ruta del archivo como se muestra en el ejemplo.
-
-Si nosotros queremos por ejemplo mandar datos, se dice que deseamos mandar un contexto, para ello debemos de crear un objeto en python (un diccionario) y mandarlo como tercer parametro, en este ejemplo estamos empleando un formulario:
-
-```
-def Create<Nombre del modelo>(request):
-    if request.method == "POST":
-        <nombre del modelo>_form = <Nombre del modelo>Form(request.POST)
-        if <nombre del modelo>_form.is_valid():
-            <nombre del modelo>_form.save()
-            return redirect("<nombre del modelo en plural>:index")
-    else:
-        <nombre del modelo>_form = <Nombre del modelo>Form()
-    return render(request, "<nombre del modelo>es/create.html", {"<nombre del modelo>_form": <nombre del modelo>_form})
-```
-
-## Vistas basadas en clases
-
-Las vistas basadas en clase reducen considerablemente el codigo a escribir para tareas repetitivas. Al momento de usar una vista basada en clase en nuestor urls.py necesitamos importar la vista y usar su metodo as_view().
-
-```
-path("<ruta>", <nombre de la vista>.as_view(), name="<nombre de la ruta>"),
-```
-
-Si queremos solo renderizar un template usamos TemplateView
-
-```
-from django.views.generic import TemplateView
-
-...
-class <Nombre de la clase>(TemplateView):
-    template_name = '<ruta al archivo>/<nombre de la plantilla>.html'
-```
-
-Si queremos renderizar un template con una lista de valores consultados usamos ListView
-
-```
-from django.views.generic import ListView
-
-...
-class <Nombre de la clase>(ListView):
-    template_name = '<ruta del archivo>/<nombre de la plantilla>.html'
-    context_object_name = '<nombre del objeto para usar en la plantilla>'
-    model = <Modelo>
-    queryset = model.objects.filter(<consulta a filtrar>) # en caso de no desear filtrar usar .all() en lugar de .filter(...)
-```
-
-Si queremos actualizar un registro podemos usar UpdateView:
-
-```
-from django.views.generic import UpdateView
-from django.urls import reverse_lazy
-
-
-...
-class <Nombre de la clase>(UpdateView):
-    model = <Nombre del modelo>
-    form_class = <Nombre del form>
-    template_name = '<ruta al archivo>/<nombre de la plantilla>.html'
-    success_url = reverse_lazy("<app_name de las url>:<nombre de la ruta>")
-```
-
-Para este caso se utiliza algo llamado reverse_lazy la cual es una funcion de redirección a la ruta deseada una vez tengamos exito en actualizar el registro.
-
-Para eliminar un registro usamos DeleteView:
-
-```
-from django.views.generic import DeleteView
-from django.urls import reverse_lazy
-
-...
-class <Nombre de la clase>(DeleteView):
-    model = <Nombre del modelo>
-    success_url = reverse_lazy("<app_name de las rutas>:<nombre de la ruta>")
-```
-
-Adicionalmente cuando eliminamos un registro usando DeleteView debemos de generar una plantilla especial de la siguiente forma:
-
-```
-<nombre del modelo>_confirm_delete.html
-```
-
-Esta plantilla debe contener un formulario que al ser enviado eliminara el registro. Ejemplo:
-
-```
-<form method="post">
-  {% csrf_token %}
-  Eliminar?
-  <button type="submit">Eliminar</button>
-</form>
-```
-
-# Rutas
-
-Para gestionar las rutas o endpoints que nuestro sistema tendra debemos crear un archivo urls.py por cada aplicación que deseemos tenga rutas, este sera enlazado al archivo urls.py principal (el archivo urls.py que se crea por defecto al iniciar el proyecto ubicado en config o en la carpeta con el nombre del proyecto creada por defecto).
-
-Para ello en el archivo urls.py principal del proyecto debemos agregar la funcion "include" y dentro del array de urlpatterns agregamos la ruta base de la aplicación y como segundo parametro la funcion "include" que recibira como parametro un string que indicara la ubicación del archivo urls de la apliación:
-
-```
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path("admin/", admin.site.urls),
-    #path("<nombre de la aplicacion en plural (plurar por convención)>", include("apps.<nombre de la aplicación>.urls"))
-]
-```
-
-Con esto estamos enlazando nuestro archivo urls.py de nuestra aplicación en cuestion a nuestro archivo urls.py del proyecto. Despues de esto debemos asegurarnos que minimamente nuestro archivo urls.py de la nuestra aplicación tenga la siguiente estructura:
-
-```
-from django.urls import path
-from apps.<nombre de la aplicación> import views
-
-urlpatterns = []
-```
-
-
-# Forms
-
-Para iniciar debemos crear un archivo llamado forms.py en nuestra aplicación que querremos gestionar por medio de formularios automatizados de django. Para trabajar con los forms de django debemos crear una clase que representara un formulario, podemos crear una clase por cada modelo para gestionar su formulario general.
-
-```
-from django import forms
-from apps.<nombre del modelo>.models import <Nombre del modelo>
-
-
-class <Nombre del modelo>Form(forms.ModelForm):
+class ExampleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = <Nombre del modelo> # Modelo al cual pertenece este formulario
-        fields = ["field1", "filed2", ...] # Este atributo representara los campos del modelo que se mostraran en el formulario.
+        model = ExampleModel
+        # Campos a mostrar:
+        # fields = "__all__"
+        # o
+        # fields = ["field1", "field2", ...]
+        # O campos a ocultar usando la misma sintaxis:
+        # exclude = ["field1", ...]
 ```
 
-Cuando heredamos de ModelForm heredamos los campos del modelo que incluyamos en la subclase Meta.
+Podemos usarlos para mandar un json o para recibir un json.
 
-Al momento de utilizar el form en las plantillas debemos agregar una tag de django llamada csrf_token, el cual hara que nuestro form sea capaz de mandar los datos al backend de django, esto se hace para asegurarnos que los datos que estamos recibiendo son seguros y vienen de un origen de confianza. Un ejemplo seria asi:
-
-```
-<form method="POST">
-    {% csrf_token %}
-    {{ <nombre de la aplicacion>_form.as_p }}
-    <button type="submit">Crear</button>
-</form>
-```
-
-Para mandar un form este debe ser mandado como parte del contexto a una platilla, por defecto se manda un form vacio pero si se recibe la peticion por metodo "post" podremos llenar la data del form usando el request, verificar si es valido y guardar el registro:
+Para mandar:
 
 ```
-def Create<Nombre del modelo>(request):
-    if request.method == "POST":
-        <nombre del modelo>_form = <Nombre del modelo>Form(request.POST)
-        if <nombre del modelo>_form.is_valid():
-            <nombre del modelo>_form.save()
-            return redirect("<nombre del modelo en plural>:index")
-    else:
-        <nombre del modelo>_form = <Nombre del modelo>Form()
-    return render(request, "<nombre del modelo>es/create.html", {"<nombre del modelo>_form": <nombre del modelo>_form})
+# Alguna View que retorne a los usuarios por ejemplo
 
+users = User.objects.all()
+
+# El parametro many=True es necesario si son varios registros
+# En caso de ser solo uno, no es necesario ya que por defecto
+# es False
+users_serializer = UserSerializer(users, many=True)
+return Response(users_serializer.data, status.HTTP_200_OK)
 ```
 
-# Archivos estaticos
-
-# Admin
-
-Si queremos registrar alguna aplicación al sitio de administración de Django, tenemos que modificar el archivo admin.py de la aplicación a registrar:
+Para recibir y guardar un nuevo registro:
 
 ```
-from django.contrib import admin
-from apps.<nombre de la aplicación>.models import <Nombre del modelo>
-
-# Register your models here.
-admin.site.register(<Nombre del modelo>)
+users_serializer = UserSerializer(data=request.data)
+if users_serializer.is_valid():
+    user_serializer.save()
+    return Response(user_serializer.data)
+return Response(user_serializer.errors)
 ```
 
-Agregando esto podemos ver nuestro modelo y sus registros en la pagina de aministración
+Para recibir y actualizar un registro existente:
+
+```
+user = User.objects.filter(id=pk).first()
+users_serializer = UserSerializer(user, data=request.data)
+if users_serializer.is_valid():
+    user_serializer.save()
+    return Response(user_serializer.data)
+return Response(user_serializer.errors)
+```
+
+Podemos crear validaciones para nuestros campos:
+
+```
+def validate_field(self, value):
+    if condition:
+        raise serializers.ValidationError("Message")
+    return value
+```
+
+Tenemos un metodo para los serializadores cuando guardan datos validados para nuestros campos:
+
+```
+def create(self, validated_data):
+    return ExampleModel.objects.create(**validated_data)
+```
+
+Tenemos un metodo para los serializadores cuando actualizan datos validados para nuestros campos:
+
+```
+def update(self, instance, validated_data):
+    instance.field1 = validated_data.get("field1", instance.field1)
+    instance.save()
+    return instance
+```
+
+Tenemos un metodo para los serializadores cuando retornan datos y asi separar el fields="**all**" para guardar y actualizar datos y este metodo para listar un registro o varios:
+
+```
+def to_representation(self, instance):
+    return {
+        # Este en caso de usar all()
+        "field":instance.field,
+        # En caso de usar all().values("field1", "field2")
+        # Usamos "field":instance["field"]
+        ...
+    }
+```
+
+Si se necesita usar un serializador con relaciones foraneas, si solo pintamos el serializador este nos mostrara unicamente los ids de las llaves, si lo que necesitamos es mostrar mas informacion tenemos tres metodos para cambiar esto:
+
+```
+# Metodo 1:
+# Esto retornara solo el metodo string del campo relacionado
+class ProductSerializer(serializers.ModelSerializer):
+    measure_unit = serializers.StringRelatedField()
+    category_product = serializers.StringRelatedField()
+
+    class Meta:
+        model = Product
+        exclude = ["state", "created_at", "updated_at"]
+
+# Metodo 2
+# Esto retornara el serializer para dicho campo relacionado
+class ProductSerializer(serializers.ModelSerializer):
+    measure_unit = general.MeasureUnitSerializer()
+    category_product = general.CategoryProductSerializer()
+
+    class Meta:
+        model = Product
+        exclude = ["state", "created_at", "updated_at"]
+
+# Metodo 3
+# Este nos permite crear una respuesta mas personalizada y completa pero
+# necesita de validaciones cuando se declara.
+class ProductSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "description": instance.description,
+            "image": instance.image if instance.image != "" else "",
+            "measure_unit": instance.measure_unit.description,
+            "category_product": instance.category_product.description,
+        }
+
+    class Meta:
+        model = Product
+        exclude = ["state", "created_at", "updated_at"]
+```
+
+# Views Rest
+
+Django Rest ofrece una clase de la cual se puede heredar para generar rutas basadas en clases:
+
+```
+from rest_framework.views import APIView
+
+class UserAPIView(APIView):
+    def get(self, request):
+        users = User.objects.all()
+        users_serializer = UserSerializer(users, many=True)
+        return Response(users_serializer.data, status.HTTP_200_OK)
+```
+
+Si queremos una clase generica para listar elementos podemos usar ListAPIView:
+
+```
+from rest_framework.generics import ListAPIView
+from apps.products import models
+
+
+class MeasureUnitListAPIView(ListAPIView):
+    model = models.MeasureUnit
+    queryset = model.objects.filter(state=True)
+```
+
+# Decoradores REST
+
+Django Rest nos ofrece un decorador llamado api_view el cual nos ayudara a utilizar funciones aisladas para determinadas rutas.
+
+```
+@api_view(["GET"])
+def user_api_view(request):
+    if request.method == "GET":
+        users = User.objects.all()
+        users_serializer = UserSerializer(users, many=True)
+        return Response(users_serializer.data, status.HTTP_200_OK)
+```

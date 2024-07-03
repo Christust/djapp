@@ -95,7 +95,7 @@ class UserManager(BaseUserManager):
         )
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser):
     # Enum de tipos de usuario
     class UserType(models.TextChoices):
         SUPER_ADMIN = "superadmin"
@@ -129,6 +129,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_superuser(self):
         return self.user_type == self.UserType.SUPER_ADMIN
+    
+    def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
 
     # Atributo que sera nuestro manager
     objects = UserManager()

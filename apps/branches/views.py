@@ -1,84 +1,154 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.views import generic
-from django.urls import reverse_lazy
-from . import forms
-from . import models
-
-# Create your views here.
-# def Home(request):a
-#     return render(request, "branches/index.html")
+from rest_framework import views, status
+from rest_framework.decorators import action
+from apps.branches import serializers, models
+from apps.base.views import BaseGenericViewSet
 
 
-class ListBranches(generic.ListView):
-    template_name = "branches/index.html"
-    context_object_name = "branches"
+class BranchViewSet(BaseGenericViewSet):
     model = models.Branch
-    queryset = model.objects.filter(is_active=True)
+    serializer_class = serializers.BranchSerializer
+    out_serializer_class = serializers.BranchOutSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+        "create": ["admin"],
+        "update": ["admin"],
+        "delete": ["admin"],
+    }
+
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
+
+        branches = self.queryset.all()[offset : offset + limit]
+        branches_out_serializer = self.out_serializer_class(branches, many=True)
+        return self.response(
+            data=branches_out_serializer.data, status=self.status.HTTP_200_OK
+        )
+
+    def create(self, request):
+        branch_serializer = self.serializer_class(data=request.data)
+        if branch_serializer.is_valid():
+            branch_serializer.save()
+            branch = self.get_object(branch_serializer.data.get("id"))
+            branch_out_serializer = self.out_serializer_class(branch)
+            return self.response(
+                data=branch_out_serializer.data, status=self.status.HTTP_201_CREATED
+            )
+        return self.response(
+            data=branch_serializer.errors, status=self.status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    def retrieve(self, request, pk):
+        branch = self.get_object(pk)
+        branch_out_serializer = self.out_serializer_class(branch)
+        return self.response(
+            data=branch_out_serializer.data, status=self.status.HTTP_200_OK
+        )
+
+    def update(self, request, pk):
+        branch = self.get_object(pk)
+        branch_out_serializer = self.out_serializer_class(
+            branch, data=request.data, partial=True
+        )
+        if branch_out_serializer.is_valid():
+            branch_out_serializer.save()
+            return self.response(
+                data=branch_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
+            )
+        return self.response(
+            data=branch_out_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+        )
+
+    def destroy(self, request, pk):
+        branch = self.get_object(pk)
+        branch.is_active = False
+        branch.save()
+        return self.response(
+            data={"message": "Deleted"}, status=self.status.HTTP_200_OK
+        )
 
 
-# def listBranch(request):
-#     branches = Branch.objects.all()
-#     return render(request, "branches/index.html", {"branches": branches})
+class CountryViewSet(BaseGenericViewSet):
+    model = models.Country
+    serializer_class = serializers.CountrySerializer
+    out_serializer_class = serializers.CountrySerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+    }
+
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
+
+        countries = self.queryset.all()[offset : offset + limit]
+        countries_out_serializer = self.out_serializer_class(countries, many=True)
+        return self.response(
+            data=countries_out_serializer.data, status=self.status.HTTP_200_OK
+        )
+
+    def retrieve(self, request, pk):
+        country = self.get_object(pk)
+        country_out_serializer = self.out_serializer_class(country)
+        return self.response(
+            data=country_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
 
-# def CreateBranch(request):
-#     if request.method == "POST":
-#         branch_form = BranchForm(request.POST)
-#         if branch_form.is_valid():
-#             branch_form.save()
-#             return redirect("branches:index")
-#     else:
-#         branch_form = BranchForm()
-#     return render(request, "branches/create.html", {"branch_form": branch_form})
+class StateViewSet(BaseGenericViewSet):
+    model = models.State
+    serializer_class = serializers.StateSerializer
+    out_serializer_class = serializers.StateSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+    }
 
-# def editBranch(request, id):
-#     branch = Branch.objects.filter(id=id).first()
-#     if request.method == "GET":
-#         branch_form = BranchForm(instance=branch)
-#     else:
-#         branch_form = BranchForm(request.POST, instance=branch)
-#         if branch_form.is_valid():
-#             branch_form.save()
-#         return redirect("branches:index")
-#     return render(request, "branches/create.html", {"branch_form": branch_form})
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
 
+        states = self.queryset.all()[offset : offset + limit]
+        states_out_serializer = self.out_serializer_class(states, many=True)
+        return self.response(
+            data=states_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-class UpdateBranch(generic.UpdateView):
-    model = models.Branch
-    form_class = forms.BranchForm
-    template_name = "branches/edit.html"
-    success_url = reverse_lazy("branches:index")
-
-
-class CreateBranch(generic.CreateView):
-    model = models.Branch
-    form_class = forms.BranchForm
-    template_name = "branches/create.html"
-    success_url = reverse_lazy("branches:index")
+    def retrieve(self, request, pk):
+        state = self.get_object(pk)
+        state_out_serializer = self.out_serializer_class(state)
+        return self.response(
+            data=state_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
 
-class DeleteBranch(generic.DeleteView):
-    model = models.Branch
-    success_url = reverse_lazy("branches:index")
+class CityViewSet(BaseGenericViewSet):
+    model = models.City
+    serializer_class = serializers.CitySerializer
+    out_serializer_class = serializers.CitySerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+    }
 
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
 
-# def deleteBranch(request, id):
-#     branch = Branch.objects.filter(id=id).first()
-#     branch.delete()
-#     return redirect("branches:index")
+        cities = self.queryset.all()[offset : offset + limit]
+        cities_out_serializer = self.out_serializer_class(cities, many=True)
+        return self.response(
+            data=cities_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-
-# Helpers
-
-
-def load_states(request):
-    country_id = request.GET.get("country_id")
-    states = models.State.objects.filter(country_id=country_id).order_by("name")
-    return JsonResponse(list(states.values("id", "name")), safe=False)
-
-
-def load_cities(request):
-    state_id = request.GET.get("state_id")
-    cities = models.City.objects.filter(state_id=state_id).order_by("name")
-    return JsonResponse(list(cities.values("id", "name")), safe=False)
+    def retrieve(self, request, pk):
+        city = self.get_object(pk)
+        city_out_serializer = self.out_serializer_class(city)
+        return self.response(
+            data=city_out_serializer.data, status=self.status.HTTP_200_OK
+        )

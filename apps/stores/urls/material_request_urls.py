@@ -1,21 +1,8 @@
-from django.urls import path
-from ..views import material_request_views
+from rest_framework.routers import DefaultRouter
+from ..views.stock_views import StockViewSet
 
-app_name = "material_requests"
+router = DefaultRouter()
 
-urlpatterns = [
-    path("", material_request_views.ListMaterialRequests.as_view(), name="index"),
-    path(
-        "create/", material_request_views.CreateMaterialRequest.as_view(), name="create"
-    ),
-    path(
-        "update/<int:pk>",
-        material_request_views.UpdateMaterialRequest.as_view(),
-        name="update",
-    ),
-    path(
-        "delete/<int:pk>",
-        material_request_views.DeleteMaterialRequest.as_view(),
-        name="delete",
-    ),
-]
+router.register(r"", StockViewSet)
+
+urlpatterns = [] + router.urls

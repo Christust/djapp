@@ -1,34 +1,70 @@
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
-from django.views import generic, View
-from django.urls import reverse_lazy
-from .. import forms
+from rest_framework import views, status
+from rest_framework.decorators import action
 from .. import models
+from ..serializers import store_serializers
+from apps.base.views import BaseGenericViewSet
 
+class StoreViewSet(BaseGenericViewSet):
+    model = models.Store
+    serializer_class = store_serializers.StoreSerializer
+    out_serializer_class = store_serializers.StoreOutSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+        "create": ["admin"],
+        "update": ["admin"],
+        "delete": ["admin"],
+    }
 
-# Create your views here.
-# Material Requests
-class ListMaterialRequests(generic.ListView):
-    template_name = "material_requests/index.html"
-    context_object_name = "material_requests"
-    model = models.MaterialRequest
-    queryset = model.objects.filter(is_active=True)
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
 
+        stores = self.queryset.all()[offset : offset + limit]
+        stores_out_serializer = self.out_serializer_class(stores, many=True)
+        return self.response(
+            data=stores_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-class UpdateMaterialRequest(generic.UpdateView):
-    model = models.MaterialRequest
-    form_class = forms.MaterialRequestForm
-    template_name = "material_requests/edit.html"
-    success_url = reverse_lazy("stores:material_requests:index")
+    def create(self, request):
+        store_serializer = self.serializer_class(data=request.data)
+        if store_serializer.is_valid():
+            store_serializer.save()
+            store = self.get_object(store_serializer.data.get("id"))
+            store_out_serializer = self.out_serializer_class(store)
+            return self.response(
+                data=store_out_serializer.data, status=self.status.HTTP_201_CREATED
+            )
+        return self.response(
+            data=store_serializer.errors, status=self.status.HTTP_406_NOT_ACCEPTABLE
+        )
 
+    def retrieve(self, request, pk):
+        store = self.get_object(pk)
+        store_out_serializer = self.out_serializer_class(store)
+        return self.response(
+            data=store_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-class CreateMaterialRequest(generic.CreateView):
-    model = models.MaterialRequest
-    form_class = forms.MaterialRequestForm
-    template_name = "material_requests/create.html"
-    success_url = "stores:material_requests:index"
+    def update(self, request, pk):
+        store = self.get_object(pk)
+        store_out_serializer = self.out_serializer_class(
+            store, data=request.data, partial=True
+        )
+        if store_out_serializer.is_valid():
+            store_out_serializer.save()
+            return self.response(
+                data=store_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
+            )
+        return self.response(
+            data=store_out_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+        )
 
-
-class DeleteMaterialRequest(generic.DeleteView):
-    model = models.MaterialRequest
-    success_url = reverse_lazy("stores:material_requests:index")
+    def destroy(self, request, pk):
+        store = self.get_object(pk)
+        store.is_active = False
+        store.save()
+        return self.response(
+            data={"message": "Deleted"}, status=self.status.HTTP_200_OK
+        )

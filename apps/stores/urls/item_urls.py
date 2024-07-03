@@ -1,12 +1,8 @@
-from django.urls import path
-from ..views import item_views
+from rest_framework.routers import DefaultRouter
+from ..views.item_views import ItemViewSet
 
-app_name = "items"
+router = DefaultRouter()
 
-urlpatterns = [
-    # Stocks
-    path("", item_views.ListItems.as_view(), name="index"),
-    path("create/", item_views.CreateItem.as_view(), name="create"),
-    path("update/<int:pk>", item_views.UpdateItem.as_view(), name="update"),
-    path("delete/<int:pk>", item_views.DeleteItem.as_view(), name="delete"),
-]
+router.register(r"", ItemViewSet)
+
+urlpatterns = [] + router.urls

@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-##u^y=^f(_sxv8f_9gp&rd=c@_(2zgots3cr+835stnh*%zc5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["0.0.0.0"]
 
 
 # Application definition
@@ -47,13 +47,22 @@ LOCAL_APPS = [
     "apps.maintenances",
 ]
 
-THIRD_APPS = ["compressor"]
+THIRD_APPS = [
+    "rest_framework",
+    "simple_history",
+    "drf_yasg",
+    "corsheaders",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "django_extensions",
+]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -128,26 +137,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_FINDERS = (
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    # other finders..
-    "compressor.finders.CompressorFinder",
-)
-
-"""
-STATICFILES_DIRS = [
-    BASE_DIR / "static"
-]
-
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    # other finders..
-    'compressor.finders.CompressorFinder',
-)
-"""
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -159,13 +148,31 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user model
 AUTH_USER_MODEL = "users.User"
 
-# Configuration for scss files and compress tag
-COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
 
-COMPRESS_ROOT = BASE_DIR / "static"
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
 
-LOGIN_REDIRECT_URL = reverse_lazy("index")
+# Auth Rest
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+}
 
-LOGOUT_REDIRECT_URL = reverse_lazy("users:login")
+# SIMPLE JWT
+from datetime import timedelta
 
-LOGIN_URL = reverse_lazy("users:login")
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}

@@ -1,34 +1,70 @@
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
-from django.views import generic
-from django.urls import reverse_lazy
-from .. import forms
+from rest_framework import views, status
+from rest_framework.decorators import action
 from .. import models
+from ..serializers import store_serializers
+from apps.base.views import BaseGenericViewSet
 
+class StoreViewSet(BaseGenericViewSet):
+    model = models.Store
+    serializer_class = store_serializers.StoreSerializer
+    out_serializer_class = store_serializers.StoreOutSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+        "create": ["admin"],
+        "update": ["admin"],
+        "delete": ["admin"],
+    }
 
-# Create your views here.
-# Item Requests
-class ListItemRequests(generic.ListView):
-    template_name = "item_requests/index.html"
-    context_object_name = "item_requests"
-    model = models.ItemRequest
-    queryset = model.objects.filter(is_active=True)
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
 
+        stores = self.queryset.all()[offset : offset + limit]
+        stores_out_serializer = self.out_serializer_class(stores, many=True)
+        return self.response(
+            data=stores_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-class UpdateItemRequest(generic.UpdateView):
-    model = models.ItemRequest
-    form_class = forms.ItemRequestForm
-    template_name = "item_requests/edit.html"
-    success_url = reverse_lazy("stores:index_item_request")
+    def create(self, request):
+        store_serializer = self.serializer_class(data=request.data)
+        if store_serializer.is_valid():
+            store_serializer.save()
+            store = self.get_object(store_serializer.data.get("id"))
+            store_out_serializer = self.out_serializer_class(store)
+            return self.response(
+                data=store_out_serializer.data, status=self.status.HTTP_201_CREATED
+            )
+        return self.response(
+            data=store_serializer.errors, status=self.status.HTTP_406_NOT_ACCEPTABLE
+        )
 
+    def retrieve(self, request, pk):
+        store = self.get_object(pk)
+        store_out_serializer = self.out_serializer_class(store)
+        return self.response(
+            data=store_out_serializer.data, status=self.status.HTTP_200_OK
+        )
 
-class CreateItemRequest(generic.CreateView):
-    model = models.ItemRequest
-    form_class = forms.ItemRequestForm
-    template_name = "item_requests/create.html"
-    success_url = reverse_lazy("stores:index_item_request")
+    def update(self, request, pk):
+        store = self.get_object(pk)
+        store_out_serializer = self.out_serializer_class(
+            store, data=request.data, partial=True
+        )
+        if store_out_serializer.is_valid():
+            store_out_serializer.save()
+            return self.response(
+                data=store_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
+            )
+        return self.response(
+            data=store_out_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+        )
 
-
-class DeleteItemRequest(generic.DeleteView):
-    model = models.ItemRequest
-    success_url = reverse_lazy("stores:index_item_request")
+    def destroy(self, request, pk):
+        store = self.get_object(pk)
+        store.is_active = False
+        store.save()
+        return self.response(
+            data={"message": "Deleted"}, status=self.status.HTTP_200_OK
+        )

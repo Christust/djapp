@@ -1,82 +1,168 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth import login
-from django.views import generic, View
-from . import models
-from . import forms
+from django.contrib.auth import authenticate
+
+from rest_framework import views, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from apps.users import serializers, models
+from apps.base.views import BaseGenericViewSet
 
 
-# Create your views here.
-class ListUsers(generic.ListView):
-    template_name = "users/index.html"
-    context_object_name = "users"
+class UserViewSet(BaseGenericViewSet):
     model = models.User
-    queryset = model.objects.filter(is_active=True)
+    serializer_class = serializers.UserSerializer
+    out_serializer_class = serializers.UserOutSerializer
+    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    permission_types = {
+        "list": ["admin"],
+        "retrieve": ["admin"],
+        "set_password": ["admin"],
+        "create": ["admin"],
+        "update": ["admin"],
+    }
+
+    def list(self, request):
+        offset = int(self.request.query_params.get("offset", 0))
+        limit = int(self.request.query_params.get("limit", 10))
+
+        users = self.queryset.all()[offset : offset + limit]
+        users_out_serializer = self.out_serializer_class(users, many=True)
+        return self.response(
+            data=users_out_serializer.data, status=self.status.HTTP_200_OK
+        )
+
+    def create(self, request):
+        user_serializer = self.serializer_class(data=request.data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            user = self.get_object(user_serializer.data.get("id"))
+            user_out_serializer = self.out_serializer_class(user)
+            return self.response(
+                data=user_out_serializer.data, status=self.status.HTTP_201_CREATED
+            )
+        return self.response(
+            data=user_serializer.errors, status=self.status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    def retrieve(self, request, pk):
+        user = self.get_object(pk)
+        user_out_serializer = self.out_serializer_class(user)
+        return self.response(
+            data=user_out_serializer.data, status=self.status.HTTP_200_OK
+        )
+
+    def update(self, request, pk):
+        user = self.get_object(pk)
+        user_out_serializer = self.out_serializer_class(
+            user, data=request.data, partial=True
+        )
+        if user_out_serializer.is_valid():
+            user_out_serializer.save()
+            return self.response(
+                data=user_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
+            )
+        return self.response(
+            data=user_out_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=True, methods=["post", "put"])
+    def set_password(self, request, pk=None):
+        current_user = self.request.user
+        user = self.get_object(pk)
+        password_serializer = serializers.PasswordSerializer(
+            data=request.data, context={"current_user": current_user, "user": user}
+        )
+        if password_serializer.is_valid():
+            user.set_password(password_serializer.validated_data["password"])
+            user.save()
+            return self.response(
+                data={"message": "Password updated"}, status=self.status.HTTP_200_OK
+            )
+        return self.response(
+            data=password_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=False, methods=["post"])
+    def send_mail(self, request):
+        from apps.base.helpers.mailer import send_mail_helper
+
+        send_mail_helper("prueba", "mensaje de prueba")
+        return self.response({"message": "ok"}, self.status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"])
+    def create_file(self, request):
+        file_serializer = serializers.FileCreateSerializer(data=request.data)
+        if file_serializer.is_valid():
+            from apps.base.helpers.aws_s3 import upload_file
+
+            uploaded = upload_file(file_serializer.validated_data.get("file"))
+            if uploaded:
+                return self.response({"message": "ok"}, self.status.HTTP_200_OK)
+            return self.response({"message": "nook"}, self.status.HTTP_200_OK)
+        return self.response({"message": "nook"}, self.status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def get_file(self, request):
+        file_serializer = serializers.FileGetSerializer(data=request.query_params)
+        if file_serializer.is_valid():
+            from apps.base.helpers.aws_s3 import create_presigned_url
+
+            url = create_presigned_url(
+                file_serializer.validated_data.get("object_name")
+            )
+            if url:
+                return self.response({"url": url}, self.status.HTTP_200_OK)
+            return self.response({"message": "nook url"}, self.status.HTTP_200_OK)
+        return self.response({"message": "nook pe"}, self.status.HTTP_200_OK)
+
+    def destroy(self, request, pk):
+        user = self.get_object(pk)
+        user.is_active = False
+        user.save()
+        return self.response(
+            data={"message": "Deleted"}, status=self.status.HTTP_200_OK
+        )
 
 
-class UpdateUser(generic.UpdateView):
-    model = models.User
-    form_class = forms.UserEditForm
-    template_name = "users/edit.html"
-    success_url = reverse_lazy("users:index")
+class Login(TokenObtainPairView):
+    serializer_class = serializers.CustomTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email", "")
+        password = request.data.get("password", "")
+        user = authenticate(email=email, password=password)
+        if user and user.is_active:
+            login_serializer = self.serializer_class(data=request.data)
+            if login_serializer.is_valid():
+                user_serializer = serializers.UserOutSerializer(user)
+                return Response(
+                    {
+                        "token": login_serializer.validated_data.get("access"),
+                        "refresh": login_serializer.validated_data.get("refresh"),
+                        "user": user_serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {"error": "No existe el usuario"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"error": "No existe el usuario"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
-class UpdateUserPassword(View):
-    model = models.User
-    form_class = forms.UserPasswordForm
-    template_name = "users/change_password.html"
-    success_url = reverse_lazy("users:index")
+class Logout(views.APIView):
+    serializer_class = None
 
-    def get(self, request, pk):
-        user = self.model.objects.filter(id=pk).first()
-        form = self.form_class()
-        print(self.form_class.as_table)
-        return render(request, self.template_name, {"form": form, "object": user})
-
-    def post(self, request, pk):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            user = self.model.objects.filter(id=pk).first()
-            if user:
-                user.set_password(form.cleaned_data.get("password"))
-                user.save()
-                return redirect(self.success_url)
-            return redirect(self.success_url)
-        else:
-            user = self.model.objects.filter(id=pk).first()
-            return render(request, self.template_name, {"form": form, "object": user})
-
-
-class CreateUser(generic.CreateView):
-    model = models.User
-    form_class = forms.UserForm
-    template_name = "users/create.html"
-    success_url = reverse_lazy("users:index")
-
-
-class DeleteUser(generic.DeleteView):
-    model = models.User
-    success_url = reverse_lazy("users:index")
-
-
-# Auth
-class Login(generic.edit.FormView):
-    template_name = "login.html"
-    form_class = forms.LoginForm
-    success_url = reverse_lazy("index")
-
-    @method_decorator(csrf_protect)
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(self.get_success_url())
-        else:
-            return super(Login, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        login(self.request, form.get_user())
-        return super(Login, self).form_valid(form)
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        if user:
+            token = RefreshToken(request.data.get("refresh_token"))
+            token.blacklist()
+            return Response({"message": "Sesion cerrada"}, status=status.HTTP_200_OK)
+        return Response(
+            {"error": "No existe el usuario"}, status=status.HTTP_400_BAD_REQUEST
+        )

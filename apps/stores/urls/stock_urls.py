@@ -1,12 +1,8 @@
-from django.urls import path
-from ..views import stock_views
+from rest_framework.routers import DefaultRouter
+from ..views.stock_views import StockViewSet
 
-app_name = "stocks"
+router = DefaultRouter()
 
-urlpatterns = [
-    # Stocks
-    path("", stock_views.ListStocks.as_view(), name="index"),
-    path("create/", stock_views.CreateStock.as_view(), name="create"),
-    path("update/<int:pk>", stock_views.UpdateStock.as_view(), name="update"),
-    path("delete/<int:pk>", stock_views.DeleteStock.as_view(), name="delete"),
-]
+router.register(r"", StockViewSet)
+
+urlpatterns = [] + router.urls
