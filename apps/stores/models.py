@@ -75,6 +75,7 @@ class MaterialRequest(Base):
         User, on_delete=models.SET_DEFAULT, blank=False, null=False, default=1
     )
     finished = models.BooleanField("Finished", default=False)
+    granted = models.BooleanField("Granted", default=False)
 
     def natural_key(self):
         return self.store

@@ -9,7 +9,7 @@ class StockViewSet(BaseGenericViewSet):
     model = models.Stock
     serializer_class = stock_serializers.StockSerializer
     out_serializer_class = stock_serializers.StockOutSerializer
-    queryset = serializer_class.Meta.model.objects.filter(is_active=True)
+    queryset = serializer_class.Meta.model.objects.all()
     permission_types = {
         "list": ["admin"],
         "retrieve": ["admin"],
@@ -64,8 +64,7 @@ class StockViewSet(BaseGenericViewSet):
 
     def destroy(self, request, pk):
         stock = self.get_object(pk)
-        stock.is_active = False
-        stock.save()
+        stock.delete()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK
         )

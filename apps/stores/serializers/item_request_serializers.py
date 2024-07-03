@@ -1,42 +1,18 @@
 from rest_framework import serializers
-from apps.branches.models import Branch, Country, State, City
+from apps.stores.models import ItemRequest
 
-# from apps.branches.serializers import BranchSerializer
+# from apps.branches.serializers import ItemRequestSerializer
 
-
-class CountrySerializer(serializers.ModelSerializer):
+class ItemRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Country
+        model = ItemRequest
         exclude = ["created_at", "modified_at", "deleted_at", "is_active"]
 
 
-class StateSerializer(serializers.ModelSerializer):
-    country = serializers.StringRelatedField()
+class ItemRequestOutSerializer(serializers.ModelSerializer):
+    item = serializers.StringRelatedField()
+    material_request = serializers.StringRelatedField()
 
     class Meta:
-        model = State
-        exclude = ["created_at", "modified_at", "deleted_at", "is_active"]
-
-
-class CitySerializer(serializers.ModelSerializer):
-    state = serializers.StringRelatedField()
-
-    class Meta:
-        model = City
-        exclude = ["created_at", "modified_at", "deleted_at", "is_active"]
-
-
-class BranchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Branch
-        exclude = ["created_at", "modified_at", "deleted_at", "is_active"]
-
-
-class BranchOutSerializer(serializers.ModelSerializer):
-    country = serializers.StringRelatedField()
-    state = serializers.StringRelatedField()
-    city = serializers.StringRelatedField()
-
-    class Meta:
-        model = Branch
+        model = ItemRequest
         exclude = ["created_at", "modified_at", "deleted_at", "is_active"]

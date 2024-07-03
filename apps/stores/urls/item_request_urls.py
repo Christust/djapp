@@ -1,8 +1,8 @@
 from rest_framework.routers import DefaultRouter
-from ..views.stock_views import StockViewSet
+from ..views.item_request_views import ItemRequestViewSet
 
 router = DefaultRouter()
 
-router.register(r"", StockViewSet)
+router.register(r"", ItemRequestViewSet)
 
 urlpatterns = [] + router.urls
