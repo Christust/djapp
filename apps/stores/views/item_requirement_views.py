@@ -4,6 +4,7 @@ from .. import models
 from ..serializers import store_serializers
 from apps.base.views import BaseGenericViewSet
 
+
 class StoreViewSet(BaseGenericViewSet):
     model = models.Store
     serializer_class = store_serializers.StoreSerializer
@@ -18,13 +19,19 @@ class StoreViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
 
-        stores = self.queryset.all()[offset : offset + limit]
+        stores = self.queryset
+        stores_count = stores.count()
+        stores = stores[self.offset : self.offset + self.limit]
         stores_out_serializer = self.out_serializer_class(stores, many=True)
         return self.response(
-            data=stores_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "stores": stores_out_serializer.data,
+                "total": stores_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):

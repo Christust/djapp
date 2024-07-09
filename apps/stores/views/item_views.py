@@ -1,8 +1,7 @@
-from rest_framework import views, status
-from rest_framework.decorators import action
 from .. import models
 from ..serializers import item_serializers
 from apps.base.views import BaseGenericViewSet
+from django.db.models import Q
 
 
 class ItemViewSet(BaseGenericViewSet):
@@ -19,13 +18,22 @@ class ItemViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
+        search = request.query_params.get("search", "")
 
-        items = self.queryset.all()[offset : offset + limit]
+        items = self.queryset.filter(
+            Q(name__icontains=search) | Q(description__icontains=search)
+        )
+        items_count = items.count()
+        items = items[self.offset : self.offset + self.limit]
         items_out_serializer = self.out_serializer_class(items, many=True)
         return self.response(
-            data=items_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "items": items_out_serializer.data,
+                "total": items_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):

@@ -19,15 +19,21 @@ class MaterialRequestViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
 
-        material_requests = self.queryset.all()[offset : offset + limit]
+        material_requests = self.queryset
+        material_requests_count = material_requests.count()
+        material_requests = material_requests[self.offset : self.offset + self.limit]
         material_requests_out_serializer = self.out_serializer_class(
             material_requests, many=True
         )
         return self.response(
-            data=material_requests_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "material_requests": material_requests_out_serializer.data,
+                "total": material_requests_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):

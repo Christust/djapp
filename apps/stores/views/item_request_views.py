@@ -19,15 +19,21 @@ class ItemRequestViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
 
-        item_requests = self.queryset.all()[offset : offset + limit]
+        item_requests = self.queryset
+        item_requests_count = item_requests.count()
+        item_requests = item_requests[self.offset : self.offset + self.limit]
         item_requests_out_serializer = self.out_serializer_class(
             item_requests, many=True
         )
         return self.response(
-            data=item_requests_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "item_requests": item_requests_out_serializer.data,
+                "total": item_requests_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):

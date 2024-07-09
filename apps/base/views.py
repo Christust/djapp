@@ -27,8 +27,14 @@ class BaseGenericViewSet(viewsets.GenericViewSet):
     permission_classes = [HasGroupPermission]
     permission_types = {}
     searched_object = None
-    offset = 0
+    page = 1
     limit = 100
+    offset = 0
+
+    def load_paginations(self, request):
+        self.page = int(request.query_params.get("page", self.page))
+        self.limit = int(request.query_params.get("limit", self.limit))
+        self.offset = (self.page * self.limit) - self.limit
 
     def get_object(self, pk):
         return get_object_or_404(self.queryset, pk=pk)
@@ -48,8 +54,14 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     permission_classes = [HasGroupPermission]
     permission_types = {}
     searched_object = None
-    offset = 0
+    page = 1
     limit = 100
+    offset = 0
+
+    def load_paginations(self, request):
+        self.page = int(request.query_params.get("page", self.page))
+        self.limit = int(request.query_params.get("limit", self.limit))
+        self.offset = (self.page * self.limit) - self.limit
 
     def get_object(self, pk):
         return get_object_or_404(self.queryset, pk=pk)

@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-##u^y=^f(_sxv8f_9gp&rd=c@_(2zgots3cr+835stnh*%zc5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0"]
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1"]
 
 
 # Application definition
@@ -55,6 +55,7 @@ THIRD_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "django_extensions",
+    "django_seed",
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -130,7 +131,7 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -144,6 +145,9 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CUSTOM
+
+# Trailing salsh
+APPEND_SLASH=True
 
 # Custom user model
 AUTH_USER_MODEL = "users.User"

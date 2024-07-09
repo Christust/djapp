@@ -18,13 +18,18 @@ class BranchViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
-
-        branches = self.queryset.all()[offset : offset + limit]
+        self.load_paginations(request)
+        branches = self.queryset
+        branches_count = branches.count()
+        branches = branches[self.offset : self.offset + self.limit]
         branches_out_serializer = self.out_serializer_class(branches, many=True)
         return self.response(
-            data=branches_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "branches": branches_out_serializer.data,
+                "total": branches_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):
@@ -81,10 +86,7 @@ class CountryViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
-
-        countries = self.queryset.all()[offset : offset + limit]
+        countries = self.queryset
         countries_out_serializer = self.out_serializer_class(countries, many=True)
         return self.response(
             data=countries_out_serializer.data, status=self.status.HTTP_200_OK
@@ -109,10 +111,14 @@ class StateViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        country = self.request.query_params.get("country", None)
 
-        states = self.queryset.all()[offset : offset + limit]
+        if country:
+            print(int(country))
+            states = self.queryset.filter(country_id=int(country))
+        else:
+            states = self.queryset
+
         states_out_serializer = self.out_serializer_class(states, many=True)
         return self.response(
             data=states_out_serializer.data, status=self.status.HTTP_200_OK
@@ -137,10 +143,12 @@ class CityViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
-
-        cities = self.queryset.all()[offset : offset + limit]
+        state = self.request.query_params.get("state", None)
+        if state:
+            print(int(state))
+            cities = self.queryset.filter(state_id=int(state))
+        else:
+            cities = self.queryset
         cities_out_serializer = self.out_serializer_class(cities, many=True)
         return self.response(
             data=cities_out_serializer.data, status=self.status.HTTP_200_OK

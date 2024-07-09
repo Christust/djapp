@@ -24,13 +24,19 @@ class UserViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
 
-        users = self.queryset.all()[offset : offset + limit]
+        users = self.queryset
+        users_count = users.count()
+        users = users[self.offset : self.offset + self.limit]
         users_out_serializer = self.out_serializer_class(users, many=True)
         return self.response(
-            data=users_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "users": users_out_serializer.data,
+                "total": users_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):

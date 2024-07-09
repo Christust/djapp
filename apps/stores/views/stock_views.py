@@ -19,13 +19,19 @@ class StockViewSet(BaseGenericViewSet):
     }
 
     def list(self, request):
-        offset = int(self.request.query_params.get("offset", 0))
-        limit = int(self.request.query_params.get("limit", 10))
+        self.load_paginations(request)
 
-        stocks = self.queryset.all()[offset : offset + limit]
+        stocks = self.queryset
+        stocks_count = stocks.count()
+        stocks = stocks[self.offset : self.offset + self.limit]
         stocks_out_serializer = self.out_serializer_class(stocks, many=True)
         return self.response(
-            data=stocks_out_serializer.data, status=self.status.HTTP_200_OK
+            data={
+                "stocks": stocks_out_serializer.data,
+                "total": stocks_count,
+                "limit": self.limit,
+            },
+            status=self.status.HTTP_200_OK,
         )
 
     def create(self, request):
