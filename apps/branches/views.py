@@ -54,16 +54,18 @@ class BranchViewSet(BaseGenericViewSet):
 
     def update(self, request, pk):
         branch = self.get_object(pk)
-        branch_out_serializer = self.out_serializer_class(
+        branch_serializer = self.serializer_class(
             branch, data=request.data, partial=True
         )
-        if branch_out_serializer.is_valid():
-            branch_out_serializer.save()
+        if branch_serializer.is_valid():
+            branch_serializer.save()
+            branch = self.get_object(pk)
+            branch_out_serializer = self.out_serializer_class(branch)
             return self.response(
                 data=branch_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
             )
         return self.response(
-            data=branch_out_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
+            data=branch_serializer.errors, status=self.status.HTTP_400_BAD_REQUEST
         )
 
     def destroy(self, request, pk):
