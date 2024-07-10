@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-##u^y=^f(_sxv8f_9gp&rd=c@_(2zgots3cr+835stnh*%zc5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "moderatorem.pythonanywhere.com"]
 
 
 # Application definition
@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CUSTOM
 
 # Trailing salsh
-APPEND_SLASH=True
+APPEND_SLASH = True
 
 # Custom user model
 AUTH_USER_MODEL = "users.User"
