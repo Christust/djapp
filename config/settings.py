@@ -26,7 +26,12 @@ SECRET_KEY = "django-insecure-##u^y=^f(_sxv8f_9gp&rd=c@_(2zgots3cr+835stnh*%zc5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "moderatorem.pythonanywhere.com"]
+ALLOWED_HOSTS = [
+    "0.0.0.0",
+    "127.0.0.1",
+    "moderatorem.pythonanywhere.com",
+    "nuxtdapi.vercel.app",
+]
 
 
 # Application definition
@@ -156,11 +161,13 @@ AUTH_USER_MODEL = "users.User"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://localhost:3000",
+    "https://nuxtdapi.vercel.app",
 ]
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
     "http://localhost:3000",
+    "https://nuxtdapi.vercel.app",
 ]
 
 # Auth Rest
