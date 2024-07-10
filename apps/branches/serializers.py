@@ -33,9 +33,9 @@ class BranchSerializer(serializers.ModelSerializer):
 
 
 class BranchOutSerializer(serializers.ModelSerializer):
-    country = serializers.StringRelatedField()
-    state = serializers.StringRelatedField()
-    city = serializers.StringRelatedField()
+    country = CountrySerializer()
+    state = StateSerializer()
+    city = CitySerializer()
 
     class Meta:
         model = Branch

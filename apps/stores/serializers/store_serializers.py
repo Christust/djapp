@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.stores.models import Store
+from apps.branches.serializers import BranchOutSerializer
 
 
 # from apps.branches.serializers import StoreSerializer
@@ -10,7 +11,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
 
 class StoreOutSerializer(serializers.ModelSerializer):
-    branch = serializers.StringRelatedField()
+    branch = BranchOutSerializer()
 
     class Meta:
         model = Store

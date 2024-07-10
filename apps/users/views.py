@@ -125,7 +125,7 @@ class UserViewSet(BaseGenericViewSet):
 
     def destroy(self, request, pk):
         user = self.get_object(pk)
-        user.is_active = False
+        user.delete()
         user.save()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK

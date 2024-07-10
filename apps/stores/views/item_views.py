@@ -72,7 +72,7 @@ class ItemViewSet(BaseGenericViewSet):
 
     def destroy(self, request, pk):
         item = self.get_object(pk)
-        item.is_active = False
+        item.delete()
         item.save()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK
