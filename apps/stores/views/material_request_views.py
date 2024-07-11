@@ -136,7 +136,6 @@ class MaterialRequestViewSet(BaseGenericViewSet):
     def destroy(self, request, pk):
         material_request = self.get_object(pk)
         material_request.delete()
-        material_request.save()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK
         )

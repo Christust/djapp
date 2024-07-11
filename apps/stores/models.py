@@ -32,8 +32,9 @@ class Item(Base):
     description = models.CharField(
         "Description", max_length=50, blank=False, null=False
     )
+    unit_price = models.FloatField("Unit Price", blank=False, null=False, default=0)
     brand = models.CharField("Brand", max_length=50, blank=False, null=False)
-    barcode = models.CharField("Barcode", max_length=50, blank=False, null=False)
+    barcode = models.CharField("Barcode",unique=True, max_length=50, blank=True, null=True)
     consumable = models.BooleanField("Consumable", default=False)
     units = models.CharField(
         "Units", max_length=20, choices=Units.choices, blank=False, null=False

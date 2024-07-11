@@ -70,7 +70,6 @@ class StoreViewSet(BaseGenericViewSet):
     def destroy(self, request, pk):
         store = self.get_object(pk)
         store.delete()
-        store.save()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK
         )

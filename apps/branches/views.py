@@ -71,7 +71,6 @@ class BranchViewSet(BaseGenericViewSet):
     def destroy(self, request, pk):
         branch = self.get_object(pk)
         branch.delete()
-        branch.save()
         return self.response(
             data={"message": "Deleted"}, status=self.status.HTTP_200_OK
         )
