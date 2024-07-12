@@ -1,7 +1,6 @@
 from .. import models
 from ..serializers import item_serializers
 from apps.base.views import BaseGenericViewSet
-from django.db.models import Q
 
 
 class ItemViewSet(BaseGenericViewSet):
@@ -19,10 +18,9 @@ class ItemViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
-        search = request.query_params.get("search", "")
 
         items = self.queryset.filter(
-            Q(name__icontains=search) | Q(description__icontains=search)
+            self.Q(name__icontains=self.search) | self.Q(description__icontains=self.search)
         )
         items_count = items.count()
         items = items[self.offset : self.offset + self.limit]

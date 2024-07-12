@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
+from django.db.models import Q
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -30,8 +31,11 @@ class BaseGenericViewSet(viewsets.GenericViewSet):
     page = 1
     limit = 100
     offset = 0
+    search = ""
+    Q = Q
 
     def load_paginations(self, request):
+        self.search = request.query_params.get("search", "")
         self.page = int(request.query_params.get("page", self.page))
         self.limit = int(request.query_params.get("limit", self.limit))
         self.offset = (self.page * self.limit) - self.limit
@@ -57,8 +61,12 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     page = 1
     limit = 100
     offset = 0
+    search = ""
+    Q = Q
+
 
     def load_paginations(self, request):
+        self.search = request.query_params.get("search", "")
         self.page = int(request.query_params.get("page", self.page))
         self.limit = int(request.query_params.get("limit", self.limit))
         self.offset = (self.page * self.limit) - self.limit

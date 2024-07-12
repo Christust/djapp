@@ -19,7 +19,7 @@ class BranchViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
-        branches = self.queryset
+        branches = self.queryset.filter(name__icontains=self.search)
         branches_count = branches.count()
         branches = branches[self.offset : self.offset + self.limit]
         branches_out_serializer = self.out_serializer_class(branches, many=True)

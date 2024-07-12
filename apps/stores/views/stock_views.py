@@ -26,6 +26,11 @@ class StockViewSet(BaseGenericViewSet):
             stocks = self.queryset.filter(store_id=store)
         else:
             stocks = self.queryset
+
+        stocks = stocks.filter(
+            self.Q(item__name__icontains=self.search)
+            | self.Q(store__name__icontains=self.search)
+        )
         stocks_count = stocks.count()
         stocks = stocks[self.offset : self.offset + self.limit]
         stocks_out_serializer = self.out_serializer_class(stocks, many=True)
@@ -60,11 +65,11 @@ class StockViewSet(BaseGenericViewSet):
 
     def update(self, request, pk):
         stock = self.get_object(pk)
-        stock_out_serializer = self.out_serializer_class(
-            stock, data=request.data, partial=True
-        )
-        if stock_out_serializer.is_valid():
-            stock_out_serializer.save()
+        stock_serializer = self.serializer_class(stock, data=request.data, partial=True)
+        if stock_serializer.is_valid():
+            stock_serializer.save()
+            stock = self.get_object(pk)
+            stock_out_serializer = self.out_serializer_class(stock)
             return self.response(
                 data=stock_out_serializer.data, status=self.status.HTTP_202_ACCEPTED
             )

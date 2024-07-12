@@ -5,7 +5,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from apps.users import serializers, models
 from apps.base.views import BaseGenericViewSet
 
@@ -25,8 +24,10 @@ class UserViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
-
-        users = self.queryset
+        users = self.queryset.filter(
+            self.Q(full_name__icontains=self.search)
+            | self.Q(email__icontains=self.search)
+        )
         users_count = users.count()
         users = users[self.offset : self.offset + self.limit]
         users_out_serializer = self.out_serializer_class(users, many=True)

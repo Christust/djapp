@@ -4,6 +4,7 @@ from .. import models
 from ..serializers import store_serializers
 from apps.base.views import BaseGenericViewSet
 
+
 class StoreViewSet(BaseGenericViewSet):
     model = models.Store
     serializer_class = store_serializers.StoreSerializer
@@ -19,8 +20,7 @@ class StoreViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
-
-        stores = self.queryset
+        stores = self.queryset.filter(name__icontains=self.search)
         stores_count = stores.count()
         stores = stores[self.offset : self.offset + self.limit]
         stores_out_serializer = self.out_serializer_class(stores, many=True)
