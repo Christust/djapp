@@ -2,6 +2,7 @@ from rest_framework import serializers
 from apps.stores.models import Stock
 from apps.stores.serializers.item_serializers import ItemOutSerializer
 from apps.stores.serializers.store_serializers import StoreOutSerializer
+from apps.branches.serializers import BranchOutSerializer
 
 # from apps.branches.serializers import StockSerializer
 
@@ -15,6 +16,7 @@ class StockSerializer(serializers.ModelSerializer):
 class StockOutSerializer(serializers.ModelSerializer):
     store = StoreOutSerializer()
     item = ItemOutSerializer()
+    store.branch = BranchOutSerializer()
 
     class Meta:
         model = Stock

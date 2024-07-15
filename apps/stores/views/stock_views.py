@@ -20,19 +20,23 @@ class StockViewSet(BaseGenericViewSet):
 
     def list(self, request):
         store = self.request.query_params.get("store", None)
+        branch = self.request.query_params.get("branch", None)
         self.load_paginations(request)
 
         if store:
             stocks = self.queryset.filter(store_id=store)
         else:
             stocks = self.queryset
+        if branch:
+            stocks = stocks.filter(store__branch__id=branch)
 
         stocks = stocks.filter(
             self.Q(item__name__icontains=self.search)
             | self.Q(store__name__icontains=self.search)
+            | self.Q(store__branch__name__icontains=self.search)
         )
         stocks_count = stocks.count()
-        stocks = stocks[self.offset : self.offset + self.limit]
+        stocks = stocks[self.offset : self.endset]
         stocks_out_serializer = self.out_serializer_class(stocks, many=True)
         return self.response(
             data={

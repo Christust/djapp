@@ -29,7 +29,7 @@ class UserViewSet(BaseGenericViewSet):
             | self.Q(email__icontains=self.search)
         )
         users_count = users.count()
-        users = users[self.offset : self.offset + self.limit]
+        users = users[self.offset :self.endset]
         users_out_serializer = self.out_serializer_class(users, many=True)
         return self.response(
             data={

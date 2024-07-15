@@ -2,12 +2,22 @@ from django.db import models
 from apps.base.models import Base
 from apps.users.models import User
 from apps.branches.models import Branch
+from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
 class MaintenanceType(Base):
     type = models.CharField("Type", max_length=20, null=False, blank=False)
     description = models.TextField("Description", null=True, blank=True)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.type
@@ -50,6 +60,15 @@ class MaintenanceRequest(Base):
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, null=False, blank=False
     )
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.description
@@ -70,6 +89,15 @@ class MaintenanceReport(Base):
         MaintenanceRequest, on_delete=models.CASCADE, null=False, blank=False
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.description

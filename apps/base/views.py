@@ -32,13 +32,22 @@ class BaseGenericViewSet(viewsets.GenericViewSet):
     limit = 100
     offset = 0
     search = ""
+    endset = 1
     Q = Q
 
     def load_paginations(self, request):
         self.search = request.query_params.get("search", "")
-        self.page = int(request.query_params.get("page", self.page))
-        self.limit = int(request.query_params.get("limit", self.limit))
-        self.offset = (self.page * self.limit) - self.limit
+        unlimit = request.query_params.get("unlimit", None)
+        if unlimit:
+            self.page = 1
+            self.limit = "unlimit"
+            self.offset = 0
+            self.endset = None
+        else:
+            self.page = int(request.query_params.get("page", self.page))
+            self.limit = int(request.query_params.get("limit", self.limit))
+            self.offset = (self.page * self.limit) - self.limit
+            self.endset = self.offset + self.limit
 
     def get_object(self, pk):
         return get_object_or_404(self.queryset, pk=pk)
@@ -62,14 +71,22 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     limit = 100
     offset = 0
     search = ""
+    endset = 1
     Q = Q
-
 
     def load_paginations(self, request):
         self.search = request.query_params.get("search", "")
-        self.page = int(request.query_params.get("page", self.page))
-        self.limit = int(request.query_params.get("limit", self.limit))
-        self.offset = (self.page * self.limit) - self.limit
+        unlimit = request.query_params.get("unlimit", None)
+        if unlimit:
+            self.page = 1
+            self.limit = "unlimit"
+            self.offset = 0
+            self.endset = None
+        else:
+            self.page = int(request.query_params.get("page", self.page))
+            self.limit = int(request.query_params.get("limit", self.limit))
+            self.offset = (self.page * self.limit) - self.limit
+            self.endset = self.offset + self.limit
 
     def get_object(self, pk):
         return get_object_or_404(self.queryset, pk=pk)

@@ -1,5 +1,6 @@
 from django.db import models
 from apps.base.models import Base
+from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
@@ -46,14 +47,20 @@ class City(Base):
 
 class Branch(Base):
     name = models.CharField("Name", max_length=50, blank=False, null=False)
-
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, blank=False, null=False
     )
-
     state = models.ForeignKey(State, on_delete=models.CASCADE, blank=False, null=False)
-
     city = models.ForeignKey(City, on_delete=models.CASCADE, blank=False, null=False)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.name

@@ -23,7 +23,7 @@ class ItemRequestViewSet(BaseGenericViewSet):
 
         item_requests = self.queryset
         item_requests_count = item_requests.count()
-        item_requests = item_requests[self.offset : self.offset + self.limit]
+        item_requests = item_requests[self.offset :self.endset]
         item_requests_out_serializer = self.out_serializer_class(
             item_requests, many=True
         )

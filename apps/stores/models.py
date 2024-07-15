@@ -2,6 +2,7 @@ from django.db import models
 from apps.base.models import Base
 from apps.branches.models import Branch
 from apps.users.models import User
+from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
@@ -10,6 +11,15 @@ class Store(Base):
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, blank=False, null=False
     )
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.name
@@ -34,11 +44,22 @@ class Item(Base):
     )
     unit_price = models.FloatField("Unit Price", blank=False, null=False, default=0)
     brand = models.CharField("Brand", max_length=50, blank=False, null=False)
-    barcode = models.CharField("Barcode",unique=True, max_length=50, blank=True, null=True)
+    barcode = models.CharField(
+        "Barcode", unique=True, max_length=50, blank=True, null=True
+    )
     consumable = models.BooleanField("Consumable", default=False)
     units = models.CharField(
         "Units", max_length=20, choices=Units.choices, blank=False, null=False
     )
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.name
@@ -55,6 +76,15 @@ class Stock(Base):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=False, null=False)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, blank=False, null=False)
     amount = models.IntegerField("Amount", blank=False, null=False)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.item
@@ -67,7 +97,7 @@ class Stock(Base):
         verbose_name_plural = "Stocks"
 
         # Unico item por store
-        unique_together = ('store', 'item')
+        unique_together = ("store", "item")
 
 
 class MaterialRequest(Base):
@@ -77,6 +107,15 @@ class MaterialRequest(Base):
     )
     finished = models.BooleanField("Finished", default=False)
     granted = models.BooleanField("Granted", default=False)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.store
@@ -116,6 +155,15 @@ class ItemRequest(Base):
     amount_returned = models.IntegerField(
         "Amount returned", blank=False, null=False, default=0
     )
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.item
@@ -134,6 +182,15 @@ class ItemRequirement(Base):
         MaterialRequirement, on_delete=models.CASCADE, blank=False, null=False
     )
     amount = models.IntegerField("Amount", blank=False, null=False)
+    historical = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     def natural_key(self):
         return self.item

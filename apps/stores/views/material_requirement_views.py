@@ -22,7 +22,7 @@ class StoreViewSet(BaseGenericViewSet):
 
         stores = self.queryset
         stores_count = stores.count()
-        stores = stores[self.offset : self.offset + self.limit]
+        stores = stores[self.offset :self.endset]
         stores_out_serializer = self.out_serializer_class(stores, many=True)
         return self.response(
             data={

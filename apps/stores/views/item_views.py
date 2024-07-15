@@ -23,7 +23,7 @@ class ItemViewSet(BaseGenericViewSet):
             self.Q(name__icontains=self.search) | self.Q(description__icontains=self.search)
         )
         items_count = items.count()
-        items = items[self.offset : self.offset + self.limit]
+        items = items[self.offset :self.endset]
         items_out_serializer = self.out_serializer_class(items, many=True)
         return self.response(
             data={

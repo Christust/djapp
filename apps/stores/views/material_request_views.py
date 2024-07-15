@@ -23,7 +23,7 @@ class MaterialRequestViewSet(BaseGenericViewSet):
 
         material_requests = self.queryset
         material_requests_count = material_requests.count()
-        material_requests = material_requests[self.offset : self.offset + self.limit]
+        material_requests = material_requests[self.offset :self.endset]
         material_requests_out_serializer = self.out_serializer_class(
             material_requests, many=True
         )

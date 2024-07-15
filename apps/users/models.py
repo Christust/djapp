@@ -9,6 +9,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # Importamos la clase HistoricalRecords, una app de terceros que lleva un historico de las
 # acciones de nuestro modelo
+from simple_history.models import HistoricalRecords
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -138,6 +139,9 @@ class User(AbstractBaseUser):
 
     # Atributo que sera nuestro manager
     objects = UserManager()
+
+    # Atributo necesario para el historial de acciones
+    historical = HistoricalRecords()
 
     # Clase Meta, declaramos aqui nuestro metadatos para el modelo
     class Meta:

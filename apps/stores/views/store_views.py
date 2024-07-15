@@ -20,9 +20,15 @@ class StoreViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
-        stores = self.queryset.filter(name__icontains=self.search)
+        branch_id = request.query_params.get("branch_id", None)
+        stores = self.queryset.filter(
+            self.Q(name__icontains=self.search)
+            | self.Q(branch__name__icontains=self.search)
+        )
+        if branch_id:
+            stores = stores.filter(branch_id=branch_id)
         stores_count = stores.count()
-        stores = stores[self.offset : self.offset + self.limit]
+        stores = stores[self.offset : self.endset]
         stores_out_serializer = self.out_serializer_class(stores, many=True)
         return self.response(
             data={

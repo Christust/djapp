@@ -21,7 +21,7 @@ class BranchViewSet(BaseGenericViewSet):
         self.load_paginations(request)
         branches = self.queryset.filter(name__icontains=self.search)
         branches_count = branches.count()
-        branches = branches[self.offset : self.offset + self.limit]
+        branches = branches[self.offset :self.endset]
         branches_out_serializer = self.out_serializer_class(branches, many=True)
         return self.response(
             data={
