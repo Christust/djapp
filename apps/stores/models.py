@@ -42,7 +42,7 @@ class Item(Base):
     description = models.CharField(
         "Description", max_length=50, blank=False, null=False
     )
-    unit_price = models.FloatField("Unit Price", blank=False, null=False, default=0)
+    unit_price = models.FloatField("Unit Price", blank=False, null=False)
     brand = models.CharField("Brand", max_length=50, blank=False, null=False)
     barcode = models.CharField(
         "Barcode", unique=True, max_length=50, blank=True, null=True
@@ -146,8 +146,8 @@ class MaterialRequirement(Base):
         verbose_name_plural = "Material Requirements"
 
 
-class ItemRequest(Base):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=False, null=False)
+class StockRequest(Base):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, blank=False, null=False)
     material_request = models.ForeignKey(
         MaterialRequest, on_delete=models.CASCADE, blank=False, null=False
     )
@@ -176,8 +176,8 @@ class ItemRequest(Base):
         verbose_name_plural = "Item Requests"
 
 
-class ItemRequirement(Base):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=False, null=False)
+class StockRequirement(Base):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, blank=False, null=False)
     material_requirement = models.ForeignKey(
         MaterialRequirement, on_delete=models.CASCADE, blank=False, null=False
     )

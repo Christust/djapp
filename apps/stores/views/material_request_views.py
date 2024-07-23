@@ -1,7 +1,7 @@
 from rest_framework import views, status
 from rest_framework.decorators import action
 from .. import models
-from ..serializers import material_request_serializers, item_request_serializers
+from ..serializers import material_request_serializers, stock_request_serializers
 from apps.base.views import BaseGenericViewSet
 
 
@@ -23,7 +23,7 @@ class MaterialRequestViewSet(BaseGenericViewSet):
 
         material_requests = self.queryset
         material_requests_count = material_requests.count()
-        material_requests = material_requests[self.offset :self.endset]
+        material_requests = material_requests[self.offset : self.endset]
         material_requests_out_serializer = self.out_serializer_class(
             material_requests, many=True
         )
@@ -38,73 +38,85 @@ class MaterialRequestViewSet(BaseGenericViewSet):
 
     def create(self, request):
         data = request.data
+        store_id = data.get("store")
+        stock_requests = data.get("stock_requests")
         data["user"] = request.user.id
+
         material_request_serializer = self.serializer_class(data=data)
+
         if material_request_serializer.is_valid():
+            # Crear material request
             material_request_serializer.save()
+
+            # Obetener id de m_r
             material_request = self.get_object(
                 material_request_serializer.data.get("id")
             )
-            store_id = material_request.store
+
             material_request_out_serializer = self.out_serializer_class(
                 material_request
             )
 
-            item_requests = data.get("item_requests")
-            item_request_out = []
-            for item_request in item_requests:
-                item_id = item_request.get("item")
-                stock = models.Stock.objects.filter(
-                    store=store_id, item=item_id
-                ).first()
+            # Array de stocks de salida
+            stock_request_out = []
+
+            # Recorrer stock_requests
+            for stock_request in stock_requests:
+                stock_data = stock_request["stock"]
+                stock = models.Stock.objects.filter(id=stock_data["id"]).first()
                 if not stock:
                     material_request.delete()
                     return self.response(
                         data={
-                            "message": f"Not created, stock does not exist, item: {item_id}"
+                            "message": f"Not created, stock does not exist, stock: {stock_data['id']}"
                         },
                         status=self.status.HTTP_406_NOT_ACCEPTABLE,
                     )
-                if item_request.get("amount") > stock.amount:
+                if stock_data["new_amount"] > stock.amount:
+                    print("new amount")
                     material_request.delete()
                     return self.response(
                         data={
-                            "message": f"Not created, amounts over limit, item amount {item_request.get('amount')}, stock: {stock.amount}"
+                            "message": f"Not created, amounts over limit, stock amount {stock_data['new_amount']}, stock: {stock.amount}"
                         },
                         status=self.status.HTTP_406_NOT_ACCEPTABLE,
                     )
-                item_request["material_request"] = material_request.id
-                item_request_serializer = (
-                    item_request_serializers.ItemRequestSerializer(data=item_request)
+                stock_data["material_request"] = material_request.id
+                stock_data["amount"] = stock_data["new_amount"]
+                stock_data["stock"] = stock_data["id"]
+                stock_request_serializer = (
+                    stock_request_serializers.StockRequestSerializer(data=stock_data)
                 )
-                if item_request_serializer.is_valid():
-                    item_request_serializer.save()
-                    item_request_out_serializer = (
-                        item_request_serializers.ItemRequestOutSerializer(
-                            item_request_serializer.data
+                if stock_request_serializer.is_valid():
+                    stock_request_serializer.save()
+                    stock_request_out_serializer = (
+                        stock_request_serializers.StockRequestOutSerializer(
+                            stock_request_serializer.data
                         )
                     )
-                    item_request_out.append(item_request_out_serializer.data)
+                    stock_request_out.append(stock_request_out_serializer.data)
                 else:
                     material_request.delete()
                     return self.response(
-                        data={"message": "Not created"},
+                        data={"errors": stock_request_serializer.errors},
                         status=self.status.HTTP_406_NOT_ACCEPTABLE,
                     )
-            material_request_out_serializer.data["item_requests"] = item_request_out
-            for item_request_out_item in item_request_out:
+            material_request_out_serializer.data["stock_requests"] = stock_request_out
+            for stock_request_out_stock in stock_request_out:
                 stock = models.Stock.objects.filter(
-                    store=store_id, item=item_request_out_item["item"]
-                ).first()
-                stock.amount -= item_request_out_item["amount"]
+                    id=stock_request_out_stock["stock"]
+                ).first()   
+                print(stock_request_out_stock)
+                stock.amount -= stock_request_out_stock["amount"]
                 stock.save()
             return self.response(
                 data={
                     "material_request": material_request_out_serializer.data,
-                    "item_requests": item_request_out,
+                    "stock_requests": stock_request_out,
                 },
                 status=self.status.HTTP_201_CREATED,
             )
+        print("last")
         return self.response(
             data=material_request_serializer.errors,
             status=self.status.HTTP_406_NOT_ACCEPTABLE,

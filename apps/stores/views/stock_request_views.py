@@ -1,14 +1,14 @@
 from rest_framework import views, status
 from rest_framework.decorators import action
 from .. import models
-from ..serializers import item_request_serializers
+from ..serializers import stock_request_serializers
 from apps.base.views import BaseGenericViewSet
 
 
-class ItemRequestViewSet(BaseGenericViewSet):
-    model = models.ItemRequest
-    serializer_class = item_request_serializers.ItemRequestSerializer
-    out_serializer_class = item_request_serializers.ItemRequestOutSerializer
+class StockRequestViewSet(BaseGenericViewSet):
+    model = models.StockRequest
+    serializer_class = stock_request_serializers.StockRequestSerializer
+    out_serializer_class = stock_request_serializers.StockRequestOutSerializer
     queryset = serializer_class.Meta.model.objects.filter(is_active=True)
     permission_types = {
         "list": ["admin"],

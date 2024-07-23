@@ -19,11 +19,13 @@ class ItemViewSet(BaseGenericViewSet):
     def list(self, request):
         self.load_paginations(request)
 
+        exclude = request.query_params.getlist("exclude[]")
         items = self.queryset.filter(
-            self.Q(name__icontains=self.search) | self.Q(description__icontains=self.search)
-        )
+            self.Q(name__icontains=self.search)
+            | self.Q(description__icontains=self.search)
+        ).exclude(id__in=exclude)
         items_count = items.count()
-        items = items[self.offset :self.endset]
+        items = items[self.offset : self.endset]
         items_out_serializer = self.out_serializer_class(items, many=True)
         return self.response(
             data={
