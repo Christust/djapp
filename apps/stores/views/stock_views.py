@@ -22,6 +22,7 @@ class StockViewSet(BaseGenericViewSet):
         store = self.request.query_params.get("store", None)
         branch = self.request.query_params.get("branch", None)
         exclude = request.query_params.getlist("exclude[]")
+        only_existences = request.query_params.get("only_existences", False)
         self.load_paginations(request)
 
         if store:
@@ -30,6 +31,8 @@ class StockViewSet(BaseGenericViewSet):
             stocks = self.queryset
         if branch:
             stocks = stocks.filter(store__branch__id=branch)
+        if only_existences:
+            stocks = stocks.exclude(amount=0)
 
         stocks = stocks.filter(
             self.Q(item__name__icontains=self.search)
