@@ -169,7 +169,7 @@ class StockRequest(Base):
         return self.item
 
     def __str__(self):
-        return f"{self.item}"
+        return f"{self.stock}"
 
     class Meta:
         verbose_name = "Item Request"
@@ -196,7 +196,7 @@ class StockRequirement(Base):
         return self.item
 
     def __str__(self):
-        return f"{self.item}"
+        return f"{self.stock}"
 
     class Meta:
         verbose_name = "Item Requirement"

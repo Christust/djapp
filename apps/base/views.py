@@ -52,10 +52,13 @@ class BaseGenericViewSet(viewsets.GenericViewSet):
     def get_object(self, pk):
         return get_object_or_404(self.queryset, pk=pk)
 
-    def response(self, data, status):
+    def response(self, data, status=None):
         return Response(
             data=data, status=status if status is not None else self.status.HTTP_200_OK
         )
+
+    def dummy_response(self):
+        return self.response(data={"dummy": "dummy"})
 
 
 class BaseModelViewSet(viewsets.ModelViewSet):
