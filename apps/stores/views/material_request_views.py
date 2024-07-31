@@ -19,7 +19,7 @@ class MaterialRequestViewSet(BaseGenericViewSet):
     def list(self, request):
         self.load_paginations(request)
 
-        material_requests = self.queryset
+        material_requests = self.queryset.order_by("id").reverse()
         material_requests_count = material_requests.count()
         material_requests = material_requests[self.offset : self.endset]
         material_requests_array = []
@@ -274,7 +274,10 @@ class MaterialRequestViewSet(BaseGenericViewSet):
         material_request = self.get_object(pk)
 
         if material_request.finished:
-            return self.response(data={'error':'Material request finished'}, status=self.status.HTTP_400_BAD_REQUEST)
+            return self.response(
+                data={"error": "Material request finished"},
+                status=self.status.HTTP_400_BAD_REQUEST,
+            )
 
         data = request.data
         stock_requests = data["stock_requests"]
