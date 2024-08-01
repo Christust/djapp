@@ -18,8 +18,27 @@ class MaterialRequestViewSet(BaseGenericViewSet):
 
     def list(self, request):
         self.load_paginations(request)
+        finished = self.request.query_params.get("finished", None)
+        branch = self.request.query_params.get("branch", None)
+        store = self.request.query_params.get("store", None)
 
-        material_requests = self.queryset.order_by("id").reverse()
+        if finished is not None:
+            finished = finished == "true"
+            material_requests = self.queryset.filter(finished=finished)
+        else:
+            material_requests = self.queryset
+
+        if branch:
+            material_requests = material_requests.filter(store__branch__id=branch)
+        if store:
+            material_requests = material_requests.filter(store_id=store)
+
+        material_requests = material_requests.filter(
+            self.Q(user__name__icontains=self.search)
+            | self.Q(user__last_name__icontains=self.search)
+        )
+
+        material_requests = material_requests.order_by("id").reverse()
         material_requests_count = material_requests.count()
         material_requests = material_requests[self.offset : self.endset]
         material_requests_array = []
@@ -46,6 +65,7 @@ class MaterialRequestViewSet(BaseGenericViewSet):
                 "finished": material_request.finished,
                 "granted": material_request.granted,
                 "branch": material_request.store.branch.id,
+                "branch_name": material_request.store.branch.name,
                 "store_name": material_request.store.name,
                 "stock_requests": stock_requests_array,
             }
@@ -237,10 +257,69 @@ class MaterialRequestViewSet(BaseGenericViewSet):
         )
 
     def retrieve(self, request, pk):
+        """
+        {
+        'branch': 1,
+        'store': 1,
+        'stock_requests': [
+                {
+                    'stock': {
+                        'id': 1,
+                        'item': 'Pinol',
+                        'amount': 15,
+                        'new_amount': 11
+                    }
+                },
+                {
+                    'stock': {
+                        'id': 3,
+                        'item': 'Escoba',
+                        'amount': 2,
+                        'new_amount': 2
+                    }
+                }
+            ]
+        }
+        """
+
+        # Obtenemos el material request
         material_request = self.get_object(pk)
-        material_request_out_serializer = self.out_serializer_class(material_request)
+
+        # Obtenemos sus stock requests
+        stock_requests = models.StockRequest.objects.filter(
+            material_request=material_request.id
+        )
+
+        # Creamos el array de stocks request
+        stock_requests_array = []
+
+        # Recorremos los stock requests para crear el objeto necesario y agregarlo al array
+        for stock_request in stock_requests:
+            stock_requests_array.append(
+                {
+                    "stock": {
+                        "id": stock_request.stock.id,
+                        "item": stock_request.stock.item.name,
+                        "amount": stock_request.amount,
+                        "new_amount": 0,
+                    }
+                }
+            )
+
+        # Creamos el objeto a devolver
+        material_request_object = {
+            "id": material_request.id,
+            "store": material_request.store.id,
+            "user": material_request.user.full_name,
+            "finished": material_request.finished,
+            "granted": material_request.granted,
+            "branch": material_request.store.branch.id,
+            "store_name": material_request.store.name,
+            "stock_requests": stock_requests_array,
+        }
+
         return self.response(
-            data=material_request_out_serializer.data, status=self.status.HTTP_200_OK
+            data=material_request_object, status=self.status.HTTP_200_OK
         )
 
     def update(self, request, pk):
